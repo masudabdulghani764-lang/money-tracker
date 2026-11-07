@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -15,100 +15,6 @@
            CSS VARIABLES & DESIGN SYSTEM (CYBER LUXURY GLASS)
            ═══════════════════════════════════════════════════════════════ */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-        /* ═══ ELEGANT CYBER-LUXURY DESIGN LAYER ═══ */
-
-        /* Subtle Ambient Cursor Glow */
-        .cursor-glow {
-            position: fixed;
-            width: 140px;
-            height: 140px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.03) 50%, transparent 70%);
-            pointer-events: none;
-            z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.3s;
-        }
-
-        /* Elegant Card Lift & Glass Polish */
-        .kpi-card, .feature-card, .chart-box, .budget-card, .recurring-card, .tx-card, .sec-box, .insight-pill {
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease !important;
-        }
-        .kpi-card:hover, .feature-card:hover, .chart-box:hover, .budget-card:hover, .recurring-card:hover, .tx-card:hover, .sec-box:hover {
-            transform: translateY(-4px) !important;
-            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35) !important;
-            border-color: rgba(99, 102, 241, 0.35) !important;
-        }
-
-        /* Clean Reliable Button Interaction */
-        .btn:active, .nav-pill:active {
-            transform: scale(0.97) !important;
-        }
-
-        /* Animated Counter */
-        .counter-animate {
-            display: inline-block;
-        }
-
-        /* Staggered Card Entrance */
-        .stagger-in {
-            opacity: 0;
-            transform: translateY(20px);
-            animation: staggerFadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        @keyframes staggerFadeIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Crisp Numbers */
-        .neon-green { color: #34d399 !important; }
-        .neon-red { color: #fb7185 !important; }
-        .neon-purple { color: #a5b4fc !important; }
-
-        /* Enhanced Input Focus */
-        .form-group input:focus, .form-group select:focus {
-            box-shadow: 0 0 0 3px var(--accent-glow) !important;
-            border-color: var(--accent-light) !important;
-        }
-
-        /* 3D Tab Transition */
-        .tab-pane {
-            perspective: 1000px;
-        }
-        .tab-pane.active {
-            animation: tabFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes tabFadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Toast Animation */
-        .toast-pill {
-            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        }
-        @keyframes toastIn {
-            from { transform: translateY(-12px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* Hero Ambient Background Glow */
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 60%;
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.04) 40%, transparent 70%);
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-        }
 
         :root {
             --bg-base: #070714;
@@ -381,14 +287,14 @@
         /* 3D Hero Section */
         .hero-section {
             position: relative;
-            max-width: 1420px;
+            max-width: 1360px;
             margin: 0 auto;
-            padding: 30px 32px 80px;
+            padding: 40px 32px 100px;
             min-height: calc(100vh - 74px);
             display: grid;
-            grid-template-columns: 1fr 1.15fr;
+            grid-template-columns: 1.15fr 1fr;
             align-items: center;
-            gap: 32px;
+            gap: 40px;
         }
 
         .hero-content {
@@ -470,7 +376,7 @@
         .hero-3d-viewport {
             position: relative;
             width: 100%;
-            height: 580px;
+            height: 540px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -482,6 +388,8 @@
             display: block;
             outline: none;
             cursor: grab;
+            touch-action: none;
+            user-select: none;
         }
         #hero3dCanvas:active { cursor: grabbing; }
 
@@ -501,8 +409,8 @@
             z-index: 5;
             pointer-events: none;
         }
-        .floating-pill.pill-1 { top: 8%; left: -2%; }
-        .floating-pill.pill-2 { bottom: 8%; right: 2%; animation-delay: -2.5s; }
+        .floating-pill.pill-1 { top: 12%; left: -5%; }
+        .floating-pill.pill-2 { bottom: 14%; right: 0%; animation-delay: -2.5s; }
 
         @keyframes floatBubble {
             0%, 100% { transform: translateY(0); }
@@ -640,14 +548,13 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(5, 5, 15, 0.84);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            background: rgba(5, 5, 15, 0.82);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             z-index: 2000;
             justify-content: center;
             align-items: center;
             padding: 24px;
-            overflow-y: auto;
         }
         .auth-backdrop.active {
             display: flex;
@@ -1367,7 +1274,7 @@
         @media (max-width: 960px) {
             .hero-section { grid-template-columns: 1fr; padding-top: 20px; }
             .hero-title { font-size: 40px; }
-            .hero-3d-viewport { height: 440px; }
+            .hero-3d-viewport { height: 380px; }
             .charts-row { grid-template-columns: 1fr; }
             .security-banner { grid-template-columns: 1fr; padding: 32px 24px; }
             .landing-nav-links { display: none; }
@@ -1378,7 +1285,6 @@
 </head>
 <body>
 
-<div class="cursor-glow" id="cursorGlow"></div>
 <div class="toast-deck" id="toastDeck"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
@@ -1617,7 +1523,7 @@
                 <input type="text" id="totpCodeInput" class="tabular" placeholder="Contoh: 123456" maxlength="6"
                        style="text-align:center; font-size:22px; letter-spacing:6px; font-weight:700;" autocomplete="one-time-code">
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%">
+            <button type="submit" class="btn btn-primary" style="width:100%" id="totpSubmitBtn">
                 <i class="ri-shield-check-line"></i> Verifikasi & Masuk
             </button>
             <button type="button" class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px;" onclick="cancel2FA()">
@@ -1655,7 +1561,7 @@
                 <label>Password (Min. 8 Karakter)</label>
                 <input type="password" id="regPassword" placeholder="Gunakan kombinasi huruf & angka" required autocomplete="new-password">
             </div>
-            <button type="submit" class="btn btn-primary" style="width:100%">
+            <button type="submit" class="btn btn-primary" style="width:100%" id="regSubmitBtn">
                 <i class="ri-user-add-line"></i> Buat Akun Vault
             </button>
         </form>
@@ -2234,245 +2140,162 @@ let txSearchDebounce = null;
 
 const $ = id => document.getElementById(id);
 
-/* â”€â”€ 3D Three.js Scene Setup (True 3D Minted Gold Vault Medallion & Currency Artifact) â”€â”€ */
-let scene, camera, renderer;
-let moneyVaultGroup, masterCoinMesh, orbitCoins = [], floatingBills = [];
-let gyroRingGold, gyroRingCyan;
-let goldSparkles;
-let targetRotX = 0, targetRotY = 0;
+/* ── 3D Three.js Scene Setup (Interactive 3D Dollar Sphere) ───────────── */
+let scene, camera, renderer, dollarSphere, orbitRing1, orbitRing2, coinGroup, starParticles;
+let targetRotationX = 0, targetRotationY = 0;
 let mouseX = 0, mouseY = 0;
-let isDragging = false, prevPointerX = 0, prevPointerY = 0;
-let dragVelX = 0, dragVelY = 0;
+let isDragging = false;
+let previousPointerPos = { x: 0, y: 0 };
+let velocityX = 0, velocityY = 0;
+const AUTO_ROTATE_SPEED = 0.009;
 
-/* â”€â”€ Procedural High-Res Currency Textures â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-function createMasterCoinTexture(isBack = false) {
+function createDollarSphereTexture() {
     const canvas = document.createElement('canvas');
-    canvas.width = 1024;
+    canvas.width = 2048;
     canvas.height = 1024;
     const ctx = canvas.getContext('2d');
-    const cx = 512, cy = 512;
 
-    // Deep brushed metallic obsidian-gold background
-    const bg = ctx.createRadialGradient(cx, cy, 50, cx, cy, 512);
-    bg.addColorStop(0, '#2e1c05');
-    bg.addColorStop(0.4, '#1b1204');
-    bg.addColorStop(0.75, '#120d03');
-    bg.addColorStop(1, '#080501');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, 1024, 1024);
+    // 1. Dark luxurious metallic obsidian background
+    const bgGrad = ctx.createLinearGradient(0, 0, 2048, 1024);
+    bgGrad.addColorStop(0, '#0a0815');
+    bgGrad.addColorStop(0.3, '#130f07');
+    bgGrad.addColorStop(0.7, '#1c150b');
+    bgGrad.addColorStop(1, '#060410');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, 2048, 1024);
 
-    // Intricate Banknote Guilloche Security Pattern (Spirograph curves)
-    ctx.save();
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.22)';
-    ctx.lineWidth = 1.3;
-    ctx.beginPath();
-    for (let theta = 0; theta < Math.PI * 16; theta += 0.025) {
-        const R = 320, r = 70, d = 95;
-        const x = cx + (R - r) * Math.cos(theta) + d * Math.cos((R - r) * theta / r);
-        const y = cy + (R - r) * Math.sin(theta) - d * Math.sin((R - r) * theta / r);
-        if (theta === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    // Subtle cyber grid lines
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.08)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x < 2048; x += 64) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1024); ctx.stroke();
     }
-    ctx.stroke();
-
-    // Secondary fine cyan security mesh
-    ctx.strokeStyle = 'rgba(6, 182, 212, 0.12)';
-    ctx.lineWidth = 1.0;
-    ctx.beginPath();
-    for (let theta = 0; theta < Math.PI * 12; theta += 0.035) {
-        const R = 270, r = 54, d = 80;
-        const x = cx + (R - r) * Math.cos(theta) + d * Math.cos((R - r) * theta / r);
-        const y = cy + (R - r) * Math.sin(theta) - d * Math.sin((R - r) * theta / r);
-        if (theta === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-    ctx.restore();
-
-    // Concentric milled border rings
-    ctx.save();
-    ctx.strokeStyle = 'rgba(254, 240, 138, 0.9)';
-    ctx.lineWidth = 8;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 470, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 440, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Milled beaded rim dots
-    const dotCount = 72;
-    for (let i = 0; i < dotCount; i++) {
-        const a = (i / dotCount) * Math.PI * 2;
-        ctx.fillStyle = i % 2 === 0 ? '#fef08a' : '#d97706';
-        ctx.beginPath();
-        ctx.arc(cx + Math.cos(a) * 455, cy + Math.sin(a) * 455, 3.5, 0, Math.PI * 2);
-        ctx.fill();
+    for (let y = 0; y < 1024; y += 64) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(2048, y); ctx.stroke();
     }
 
-    // Inner security ring
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.7)';
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.arc(cx, cy, 330, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Circular Stamped Text
-    ctx.font = 'bold 22px Inter, sans-serif';
-    ctx.fillStyle = '#fef08a';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const bannerText = isBack
-        ? "â˜… SMART FINANCIAL CONTROL â˜… RFC 6238 VAULT â˜… 2026 â˜… "
-        : "â˜… MONEY TRACKER BY MAS'UD â˜… FINANCIAL VAULT â˜… 2026 â˜… ";
-    const radius = 385;
-    const step = (Math.PI * 2) / bannerText.length;
-    for (let i = 0; i < bannerText.length; i++) {
-        const a = i * step - Math.PI / 2;
+    // Helper to draw the Dollar Crest at (cx, cy)
+    function drawDollarCrest(cx, cy) {
         ctx.save();
-        ctx.translate(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius);
-        ctx.rotate(a + Math.PI / 2);
-        ctx.fillText(bannerText[i], 0, 0);
+
+        // Ambient golden bloom back-glow
+        const glowRadial = ctx.createRadialGradient(cx, cy, 50, cx, cy, 450);
+        glowRadial.addColorStop(0, 'rgba(245, 158, 11, 0.35)');
+        glowRadial.addColorStop(0.6, 'rgba(168, 85, 247, 0.15)');
+        glowRadial.addColorStop(1, 'transparent');
+        ctx.fillStyle = glowRadial;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 450, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Outer concentric rings
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 35;
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.8)';
+        ctx.lineWidth = 10;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 390, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(6, 182, 212, 0.6)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 360, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Dashed ticks ring
+        ctx.setLineDash([16, 12]);
+        ctx.strokeStyle = 'rgba(254, 240, 138, 0.7)';
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 420, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Circular Text Stamp: "★ MONEY TRACKER BY MAS'UD ★ 2026 ★"
+        ctx.font = 'bold 24px Inter, sans-serif';
+        ctx.fillStyle = '#fef08a';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const str = "★ MONEY TRACKER BY MAS'UD ★ FINANCIAL VAULT ★ 2026 ";
+        const radius = 325;
+        const step = (Math.PI * 2) / str.length;
+        for (let i = 0; i < str.length; i++) {
+            const angle = i * step - Math.PI / 2;
+            ctx.save();
+            ctx.translate(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
+            ctx.rotate(angle + Math.PI / 2);
+            ctx.fillText(str[i], 0, 0);
+            ctx.restore();
+        }
+
+        // Giant Golden Dollar Symbol ($)
+        ctx.font = '900 460px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Outer Glow
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 60;
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText('$', cx, cy + 12);
+
+        // Metallic multi-stop gold gradient fill
+        ctx.shadowBlur = 10;
+        const goldGrad = ctx.createLinearGradient(cx - 160, cy - 220, cx + 160, cy + 220);
+        goldGrad.addColorStop(0, '#ffffff');
+        goldGrad.addColorStop(0.2, '#fef08a');
+        goldGrad.addColorStop(0.5, '#f59e0b');
+        goldGrad.addColorStop(0.8, '#d97706');
+        goldGrad.addColorStop(1, '#78350f');
+        ctx.fillStyle = goldGrad;
+        ctx.fillText('$', cx, cy + 12);
+
+        // White neon inner highlight stroke
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 7;
+        ctx.strokeText('$', cx, cy + 12);
+
         ctx.restore();
     }
 
-    if (!isBack) {
-        // FRONT FACE: Giant 3D Golden Dollar Emblem ($)
-        // Outer drop shadow glow
-        ctx.shadowColor = '#f59e0b';
-        ctx.shadowBlur = 45;
-        ctx.fillStyle = '#f59e0b';
-        ctx.font = '900 420px Inter, sans-serif';
-        ctx.fillText('$', cx, cy + 18);
+    // Draw on Front Face (cx = 512) and Back Face (cx = 1536)
+    drawDollarCrest(512, 512);
+    drawDollarCrest(1536, 512);
 
-        // Metallic multi-stop gold gradient fill
-        ctx.shadowBlur = 8;
-        const goldG = ctx.createLinearGradient(cx - 150, cy - 200, cx + 150, cy + 200);
-        goldG.addColorStop(0, '#ffffff');
-        goldG.addColorStop(0.2, '#fef08a');
-        goldG.addColorStop(0.5, '#f59e0b');
-        goldG.addColorStop(0.8, '#d97706');
-        goldG.addColorStop(1, '#78350f');
-        ctx.fillStyle = goldG;
-        ctx.fillText('$', cx, cy + 18);
-
-        // Specular inner stroke
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 6;
-        ctx.strokeText('$', cx, cy + 18);
-    } else {
-        // BACK FACE: High-Tech Security Vault Diamond Crest
-        ctx.shadowColor = '#06b6d4';
-        ctx.shadowBlur = 35;
-        ctx.fillStyle = '#06b6d4';
-        ctx.font = '900 240px Inter, sans-serif';
-        ctx.fillText('ðŸ’Ž', cx, cy - 10);
-
-        ctx.font = '800 44px Inter, sans-serif';
-        ctx.fillStyle = '#fef08a';
-        ctx.shadowColor = '#f59e0b';
-        ctx.shadowBlur = 10;
-        ctx.fillText('ENCRYPTED', cx, cy + 160);
-        ctx.font = '600 28px Inter, sans-serif';
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('2FA â€¢ SECURE VAULT', cx, cy + 205);
-    }
-
-    ctx.restore();
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.ClampToEdgeWrapping;
-    tex.wrapT = THREE.ClampToEdgeWrapping;
-    return tex;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
+    return texture;
 }
 
-function createBanknoteTexture() {
-    const canvas = document.createElement('canvas');
-    canvas.width = 512;
-    canvas.height = 280;
-    const ctx = canvas.getContext('2d');
-
-    // Translucent dark emerald & cyber gold banknote
-    const bg = ctx.createLinearGradient(0, 0, 512, 280);
-    bg.addColorStop(0, 'rgba(6, 78, 59, 0.95)');
-    bg.addColorStop(0.5, 'rgba(4, 47, 46, 0.92)');
-    bg.addColorStop(1, 'rgba(2, 44, 34, 0.95)');
-    ctx.fillStyle = bg;
-    ctx.fillRect(0, 0, 512, 280);
-
-    // Ornate guilloche banknote frame
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(12, 12, 488, 256);
-    ctx.strokeStyle = '#34d399';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(18, 18, 476, 244);
-
-    // Corner denominations
-    ctx.fillStyle = '#fef08a';
-    ctx.font = 'bold 24px Inter, monospace';
-    ctx.fillText('', 26, 46);
-    ctx.fillText('', 430, 46);
-    ctx.fillText('', 26, 250);
-    ctx.fillText('', 430, 250);
-
-    // Center currency crest
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.4)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(256, 140, 75, 0, Math.PI * 2);
-    ctx.stroke();
-
-    ctx.font = '900 86px Inter, sans-serif';
-    ctx.fillStyle = '#fef08a';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('$', 256, 142);
-
-    ctx.font = 'bold 15px Inter, sans-serif';
-    ctx.fillStyle = '#a7f3d0';
-    ctx.fillText("MONEY TRACKER â€¢ MAS'UD VAULT", 256, 230);
-
-    const tex = new THREE.CanvasTexture(canvas);
-    return tex;
-}
-
-function createMiniCoinTexture() {
+function createCoinDollarTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
-    const bg = ctx.createRadialGradient(128, 128, 20, 128, 128, 128);
-    bg.addColorStop(0, '#fef08a');
-    bg.addColorStop(0.7, '#f59e0b');
-    bg.addColorStop(1, '#b45309');
-    ctx.fillStyle = bg;
+
+    // Gold coin background
+    const bgGrad = ctx.createRadialGradient(128, 128, 20, 128, 128, 128);
+    bgGrad.addColorStop(0, '#fef08a');
+    bgGrad.addColorStop(0.7, '#f59e0b');
+    bgGrad.addColorStop(1, '#b45309');
+    ctx.fillStyle = bgGrad;
     ctx.beginPath(); ctx.arc(128, 128, 120, 0, Math.PI * 2); ctx.fill();
+
+    // Border
     ctx.strokeStyle = '#78350f';
-    ctx.lineWidth = 7;
+    ctx.lineWidth = 6;
     ctx.stroke();
+
+    // Dollar sign
     ctx.fillStyle = '#451a03';
     ctx.font = '900 130px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('$', 128, 134);
-    return new THREE.CanvasTexture(canvas);
-}
 
-/* â”€â”€ 3D Scene Initialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-function updateCameraDistance() {
-    if (!camera || !renderer) return;
-    const container = document.querySelector('.hero-3d-viewport');
-    if (!container) return;
-    const aspect = container.clientWidth / container.clientHeight;
-    camera.aspect = aspect;
-    // Bounding target of 3.4 units with guaranteed transparent padding on all edges
-    const targetSpan = 3.45;
-    const halfFovRad = (camera.fov * Math.PI) / 360;
-    const distY = targetSpan / Math.tan(halfFovRad);
-    const distX = targetSpan / (Math.tan(halfFovRad) * Math.max(aspect, 0.6));
-    camera.position.z = Math.max(distY, distX, 9.0);
-    camera.updateProjectionMatrix();
+    return new THREE.CanvasTexture(canvas);
 }
 
 function init3DHeroScene() {
@@ -2483,163 +2306,83 @@ function init3DHeroScene() {
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // 1. Scene & Camera
+    // 1. Scene
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    updateCameraDistance();
 
-    // 2. WebGL Renderer
+    // 2. Camera
+    camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+    camera.position.z = 7.6;
+
+    // 3. Renderer
     renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // 3. Main Centerpiece Group
-    moneyVaultGroup = new THREE.Group();
-    scene.add(moneyVaultGroup);
-
-    // â”€â”€ 4. The Master 3D Minted Gold Medallion â”€â”€
-    const frontTex = createMasterCoinTexture(false);
-    const backTex = createMasterCoinTexture(true);
-
-    // Cylinder with true 3D thickness (1.98 radius, 0.42 thickness)
-    const coinGeo = new THREE.CylinderGeometry(1.98, 1.98, 0.42, 64);
-    const rimMat = new THREE.MeshStandardMaterial({
-        color: 0xd97706,
-        metalness: 0.94,
+    // 4. Central 3D Rotating Dollar Sphere
+    const dollarTexture = createDollarSphereTexture();
+    const sphereGeometry = new THREE.SphereGeometry(1.85, 64, 64);
+    const sphereMaterial = new THREE.MeshPhysicalMaterial({
+        map: dollarTexture,
+        bumpMap: dollarTexture,
+        bumpScale: 0.08,
+        emissiveMap: dollarTexture,
+        emissive: 0x241804,
+        emissiveIntensity: 0.35,
         roughness: 0.22,
-    });
-    const frontMat = new THREE.MeshPhysicalMaterial({
-        map: frontTex,
-        bumpMap: frontTex,
-        bumpScale: 0.16,
-        metalness: 0.92,
-        roughness: 0.18,
+        metalness: 0.85,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.08,
+        clearcoatRoughness: 0.12,
     });
-    const backMat = new THREE.MeshPhysicalMaterial({
-        map: backTex,
-        bumpMap: backTex,
-        bumpScale: 0.16,
-        metalness: 0.92,
-        roughness: 0.18,
-        clearcoat: 1.0,
-        clearcoatRoughness: 0.08,
-    });
+    dollarSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    scene.add(dollarSphere);
 
-    masterCoinMesh = new THREE.Mesh(coinGeo, [rimMat, frontMat, backMat]);
-    masterCoinMesh.rotation.x = Math.PI / 2;
-    moneyVaultGroup.add(masterCoinMesh);
-
-    // â”€â”€ 5. 72 Physical 3D Milled Edge Ridges â”€â”€
-    const ridgeGeo = new THREE.BoxGeometry(0.035, 0.42, 0.07);
-    const ridgeMat = new THREE.MeshStandardMaterial({
-        color: 0xfef08a,
-        metalness: 0.95,
-        roughness: 0.15,
-    });
-    for (let i = 0; i < 72; i++) {
-        const a = (i / 72) * Math.PI * 2;
-        const ridge = new THREE.Mesh(ridgeGeo, ridgeMat);
-        ridge.position.x = Math.cos(a) * 1.985;
-        ridge.position.z = Math.sin(a) * 1.985;
-        ridge.rotation.y = -a;
-        masterCoinMesh.add(ridge);
-    }
-
-    // â”€â”€ 6. Dual Sculpted Beveled Rims (Torus) â”€â”€
-    const bevelRimGeo = new THREE.TorusGeometry(1.98, 0.042, 16, 80);
-    const bevelRimMat = new THREE.MeshStandardMaterial({
-        color: 0xfef08a,
-        metalness: 0.95,
-        roughness: 0.15,
-    });
-    const topBevel = new THREE.Mesh(bevelRimGeo, bevelRimMat);
-    topBevel.rotation.x = Math.PI / 2;
-    topBevel.position.y = 0.21;
-    masterCoinMesh.add(topBevel);
-
-    const bottomBevel = new THREE.Mesh(bevelRimGeo, bevelRimMat);
-    bottomBevel.rotation.x = Math.PI / 2;
-    bottomBevel.position.y = -0.21;
-    masterCoinMesh.add(bottomBevel);
-
-    // â”€â”€ 7. Floating 3D Holographic Currency Notes / Cash Bills â”€â”€
-    floatingBills = [];
-    const billTex = createBanknoteTexture();
-    const billGeo = new THREE.PlaneGeometry(1.48, 0.82);
-    const billMat = new THREE.MeshPhysicalMaterial({
-        map: billTex,
+    // Glowing Holographic Orbital Rings
+    const ringGeo1 = new THREE.TorusGeometry(2.35, 0.035, 16, 120);
+    const ringMat1 = new THREE.MeshBasicMaterial({
+        color: 0x06b6d4,
         transparent: true,
-        opacity: 0.88,
-        roughness: 0.2,
-        metalness: 0.4,
-        side: THREE.DoubleSide,
+        opacity: 0.6,
     });
+    orbitRing1 = new THREE.Mesh(ringGeo1, ringMat1);
+    orbitRing1.rotation.x = Math.PI / 3;
+    orbitRing1.rotation.y = Math.PI / 6;
+    scene.add(orbitRing1);
 
-    for (let i = 0; i < 3; i++) {
-        const bill = new THREE.Mesh(billGeo, billMat);
-        const baseAngle = (i / 3) * Math.PI * 2;
-        bill.userData = {
-            baseAngle: baseAngle,
-            radius: 2.72 + (i * 0.15),
-            speed: 0.007 + (i * 0.003),
-            yBob: i * 1.5,
-            rotSpeed: 0.01 + (i * 0.005),
-        };
-        scene.add(bill);
-        floatingBills.push(bill);
-    }
+    const ringGeo2 = new THREE.TorusGeometry(2.55, 0.02, 16, 120);
+    const ringMat2 = new THREE.MeshBasicMaterial({
+        color: 0xa855f7,
+        transparent: true,
+        opacity: 0.45,
+    });
+    orbitRing2 = new THREE.Mesh(ringGeo2, ringMat2);
+    orbitRing2.rotation.x = -Math.PI / 4;
+    orbitRing2.rotation.z = Math.PI / 5;
+    scene.add(orbitRing2);
 
-    // â”€â”€ 8. Orbiting 3D Small Gold Coins with $ Emblem â”€â”€
-    orbitCoins = [];
-    const miniTex = createMiniCoinTexture();
-    const miniGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.08, 24);
-    const miniSideMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.95, roughness: 0.25 });
-    const miniFaceMat = new THREE.MeshStandardMaterial({ map: miniTex, metalness: 0.9, roughness: 0.2 });
-    const miniMats = [miniSideMat, miniFaceMat, miniFaceMat];
+    // 5. Orbiting 3D Gold Coins with $ Emblem
+    const coinTexture = createCoinDollarTexture();
+    coinGroup = new THREE.Group();
+    scene.add(coinGroup);
+
+    const coinGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.07, 24);
+    const coinSideMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.9, roughness: 0.3 });
+    const coinFaceMat = new THREE.MeshStandardMaterial({ map: coinTexture, metalness: 0.85, roughness: 0.25 });
+    const coinMaterials = [coinSideMat, coinFaceMat, coinFaceMat];
 
     for (let i = 0; i < 4; i++) {
-        const coin = new THREE.Mesh(miniGeo, miniMats);
+        const coin = new THREE.Mesh(coinGeo, coinMaterials);
         const angle = (i / 4) * Math.PI * 2;
-        coin.userData = {
-            angle: angle,
-            speed: 0.01 + (i % 2) * 0.004,
-            radius: 2.78,
-            yRatio: (i % 2 === 0 ? 0.4 : -0.35),
-        };
-        scene.add(coin);
-        orbitCoins.push(coin);
+        const radius = 3.15;
+        coin.position.x = Math.cos(angle) * radius;
+        coin.position.y = Math.sin(angle) * (radius * 0.45);
+        coin.position.z = Math.sin(angle * 2) * 0.9;
+        coin.rotation.x = Math.PI / 2;
+        coin.rotation.z = angle;
+        coinGroup.add(coin);
     }
 
-    // â”€â”€ 9. Gyroscopic Telemetry Orbit Rings â”€â”€
-    const gRingGeo1 = new THREE.TorusGeometry(2.55, 0.018, 16, 120);
-    const gRingMat1 = new THREE.MeshStandardMaterial({
-        color: 0xf59e0b,
-        emissive: 0xd97706,
-        emissiveIntensity: 0.4,
-        metalness: 0.9,
-        roughness: 0.2,
-    });
-    gyroRingGold = new THREE.Mesh(gRingGeo1, gRingMat1);
-    gyroRingGold.rotation.x = Math.PI / 3;
-    scene.add(gyroRingGold);
-
-    const gRingGeo2 = new THREE.TorusGeometry(2.88, 0.015, 16, 120);
-    const gRingMat2 = new THREE.MeshStandardMaterial({
-        color: 0x06b6d4,
-        emissive: 0x0891b2,
-        emissiveIntensity: 0.35,
-        metalness: 0.85,
-        roughness: 0.25,
-    });
-    gyroRingCyan = new THREE.Mesh(gRingGeo2, gRingMat2);
-    gyroRingCyan.rotation.y = -Math.PI / 4;
-    gyroRingCyan.rotation.z = Math.PI / 5;
-    scene.add(gyroRingCyan);
-
-    // â”€â”€ 10. Ambient Golden Sparkle Dust â”€â”€
-    const starCount = 400;
+    // 6. Ambient 3D Starfield Particles
+    const starCount = 700;
     const starGeo = new THREE.BufferGeometry();
     const starPositions = new Float32Array(starCount * 3);
     for (let i = 0; i < starCount * 3; i += 3) {
@@ -2649,57 +2392,65 @@ function init3DHeroScene() {
     }
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
     const starMat = new THREE.PointsMaterial({
-        color: 0xfef08a,
-        size: 0.035,
+        color: 0xf59e0b,
+        size: 0.05,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.65,
     });
-    goldSparkles = new THREE.Points(starGeo, starMat);
-    scene.add(goldSparkles);
+    starParticles = new THREE.Points(starGeo, starMat);
+    scene.add(starParticles);
 
-    // â”€â”€ 11. Dynamic Studio Lights â”€â”€
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1.25);
+    // 7. Dynamic Studio Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
     scene.add(ambientLight);
 
-    const goldKeyLight = new THREE.PointLight(0xfef08a, 55, 45);
-    goldKeyLight.position.set(4, 3, 5);
-    scene.add(goldKeyLight);
+    const goldPoint = new THREE.PointLight(0xf59e0b, 55, 50);
+    goldPoint.position.set(4, 3, 5);
+    scene.add(goldPoint);
 
-    const cyanRimLight = new THREE.PointLight(0x06b6d4, 45, 45);
-    cyanRimLight.position.set(-4, -3, 3);
-    scene.add(cyanRimLight);
+    const cyanLight = new THREE.PointLight(0x06b6d4, 40, 50);
+    cyanLight.position.set(-4, -3, 3);
+    scene.add(cyanLight);
 
-    const purpleBackLight = new THREE.PointLight(0xa855f7, 35, 45);
-    purpleBackLight.position.set(0, 5, -3);
-    scene.add(purpleBackLight);
+    const purpleLight = new THREE.PointLight(0xa855f7, 35, 50);
+    purpleLight.position.set(0, 5, -2);
+    scene.add(purpleLight);
 
-    // â”€â”€ 12. Full 360Â° Interactive Drag Controls â”€â”€
+    // 8. Interactive Drag-to-Rotate & Parallax Listeners
     canvas.addEventListener('pointerdown', e => {
         isDragging = true;
-        prevPointerX = e.clientX;
-        prevPointerY = e.clientY;
-        dragVelX = 0;
-        dragVelY = 0;
+        previousPointerPos = { x: e.clientX, y: e.clientY };
+        velocityX = 0;
+        velocityY = 0;
+        try { canvas.setPointerCapture(e.pointerId); } catch {}
     });
 
     window.addEventListener('pointermove', e => {
-        if (isDragging && moneyVaultGroup) {
-            const deltaX = e.clientX - prevPointerX;
-            const deltaY = e.clientY - prevPointerY;
-            dragVelX = deltaX * 0.007;
-            dragVelY = deltaY * 0.007;
-            moneyVaultGroup.rotation.y += dragVelX;
-            moneyVaultGroup.rotation.x += dragVelY;
-            prevPointerX = e.clientX;
-            prevPointerY = e.clientY;
-        } else {
-            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+        mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+
+        if (isDragging && dollarSphere) {
+            const deltaX = e.clientX - previousPointerPos.x;
+            const deltaY = e.clientY - previousPointerPos.y;
+
+            dollarSphere.rotation.y += deltaX * 0.007;
+            dollarSphere.rotation.x += deltaY * 0.007;
+
+            velocityY = deltaX * 0.007;
+            velocityX = deltaY * 0.007;
+
+            previousPointerPos = { x: e.clientX, y: e.clientY };
         }
     });
 
-    window.addEventListener('pointerup', () => { isDragging = false; });
-    window.addEventListener('pointercancel', () => { isDragging = false; });
+    const stopDrag = e => {
+        if (isDragging) {
+            isDragging = false;
+            try { canvas.releasePointerCapture(e.pointerId); } catch {}
+        }
+    };
+    window.addEventListener('pointerup', stopDrag);
+    window.addEventListener('pointercancel', stopDrag);
 
     window.addEventListener('resize', onWindowResize);
     animate3D();
@@ -2710,70 +2461,54 @@ function onWindowResize() {
     if (!container || !renderer || !camera) return;
     const width = container.clientWidth;
     const height = container.clientHeight;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
     renderer.setSize(width, height);
-    updateCameraDistance();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 }
+
 function animate3D() {
     requestAnimationFrame(animate3D);
 
-    if (moneyVaultGroup) {
+    if (dollarSphere) {
         if (!isDragging) {
-            // Continuous elegant 360 rotation showing true 3D thickness and back crest
-            moneyVaultGroup.rotation.y += 0.009 + dragVelX;
-            moneyVaultGroup.rotation.x += dragVelY;
-            dragVelX *= 0.94;
-            dragVelY *= 0.94;
+            // Smooth inertia decay after user release
+            dollarSphere.rotation.y += velocityY;
+            dollarSphere.rotation.x += velocityX;
+            velocityX *= 0.92;
+            velocityY *= 0.92;
 
-            // Interactive mouse parallax tilt
-            targetRotY = mouseX * 0.4;
-            targetRotX = -mouseY * 0.3;
-            moneyVaultGroup.rotation.x += (targetRotX - moneyVaultGroup.rotation.x) * 0.04;
+            // Continuous elegant rotation
+            dollarSphere.rotation.y += AUTO_ROTATE_SPEED;
+
+            // Gentle parallax tilt following cursor
+            targetRotationX = -mouseY * 0.22;
+            dollarSphere.rotation.x += (targetRotationX - dollarSphere.rotation.x) * 0.04;
         }
-
-        // Breathing scale effect
-        const breathe = 1 + Math.sin(Date.now() * 0.0012) * 0.02;
-        moneyVaultGroup.scale.set(breathe, breathe, breathe);
     }
 
-    // Floating Banknote Shards animation
-    floatingBills.forEach((bill, i) => {
-        bill.userData.baseAngle += bill.userData.speed;
-        const rad = bill.userData.radius;
-        bill.position.x = Math.cos(bill.userData.baseAngle) * rad;
-        bill.position.z = Math.sin(bill.userData.baseAngle) * rad;
-        bill.position.y = Math.sin(Date.now() * 0.002 + bill.userData.yBob) * 0.55;
-        bill.rotation.y += bill.userData.rotSpeed;
-        bill.rotation.z = Math.sin(Date.now() * 0.0015 + i) * 0.2;
-    });
-
-    // Orbiting mini gold coins
-    orbitCoins.forEach(coin => {
-        coin.userData.angle += coin.userData.speed;
-        const rad = coin.userData.radius;
-        coin.position.x = Math.cos(coin.userData.angle) * rad;
-        coin.position.z = Math.sin(coin.userData.angle) * rad;
-        coin.position.y = Math.sin(coin.userData.angle * 2) * (rad * coin.userData.yRatio);
-        coin.rotation.x += 0.025;
-        coin.rotation.y += 0.035;
-    });
-
-    // Gyroscopic rings
-    if (gyroRingGold) {
-        gyroRingGold.rotation.z += 0.006;
+    if (orbitRing1) {
+        orbitRing1.rotation.z += 0.008;
     }
-    if (gyroRingCyan) {
-        gyroRingCyan.rotation.z -= 0.005;
-        gyroRingCyan.rotation.x += 0.003;
+    if (orbitRing2) {
+        orbitRing2.rotation.y -= 0.006;
     }
 
-    if (goldSparkles) {
-        goldSparkles.rotation.y -= 0.0005;
+    if (coinGroup) {
+        coinGroup.rotation.z += 0.006;
+        coinGroup.children.forEach(c => {
+            c.rotation.y += 0.02;
+        });
+    }
+
+    if (starParticles) {
+        starParticles.rotation.y -= 0.0006;
     }
 
     renderer.render(scene, camera);
 }
 
-/* â”€â”€ Currency & Formatters â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── Currency & Formatters ─────────────────────────────────────────────── */
 function formatIDR(val) {
     return 'Rp ' + Number(val || 0).toLocaleString('id-ID');
 }
@@ -2831,16 +2566,14 @@ function showDashboardView() {
 }
 
 function openAuthModal(mode = 'login') {
-    document.body.style.overflow = 'hidden';
     $('authBackdrop').classList.add('active');
+    document.body.style.overflow = 'hidden';
     switchAuthMode(mode);
 }
 
 function closeAuthModal() {
-    document.body.style.overflow = '';
     $('authBackdrop').classList.remove('active');
-    $('loginAlert').style.display = 'none';
-    $('registerAlert').style.display = 'none';
+    document.body.style.overflow = '';
 }
 
 function switchAuthMode(mode) {
@@ -2849,11 +2582,15 @@ function switchAuthMode(mode) {
     $('loginAlert').style.display = 'none';
     $('registerAlert').style.display = 'none';
     cancel2FA();
-    if (mode === 'login') {
-        setTimeout(() => { if ($('loginIdentifier')) $('loginIdentifier').focus(); }, 100);
-    } else {
-        setTimeout(() => { if ($('regUsername')) $('regUsername').focus(); }, 100);
-    }
+    setTimeout(() => {
+        if (mode === 'login') {
+            const el = $('loginIdentifier');
+            if (el) el.focus();
+        } else {
+            const el = $('regUsername');
+            if (el) el.focus();
+        }
+    }, 100);
 }
 
 /* ── Dashboard Tab Switching ───────────────────────────────────────────── */
@@ -2883,9 +2620,11 @@ $('passwordLoginForm').addEventListener('submit', async e => {
     const alertBox = $('loginAlert');
     alertBox.style.display = 'none';
     const submitBtn = $('loginSubmitBtn');
-    const origHtml = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Membuka Vault...';
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Memverifikasi...';
+    }
 
     try {
         const res = await fetchAPI('/api/auth/login', {
@@ -2910,14 +2649,11 @@ $('passwordLoginForm').addEventListener('submit', async e => {
         alertBox.textContent = err.message;
         alertBox.style.display = 'block';
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = origHtml;
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
     }
-});
-
-// Ensure clicks inside auth card never close modal
-document.querySelectorAll('.auth-card').forEach(card => {
-    card.addEventListener('click', e => e.stopPropagation());
 });
 
 function cancel2FA() {
@@ -2930,16 +2666,19 @@ $('totpVerifyForm').addEventListener('submit', async e => {
     e.preventDefault();
     const alertBox = $('loginAlert');
     alertBox.style.display = 'none';
-    const btn = e.target.querySelector('button[type="submit"]');
-    const origHtml = btn ? btn.innerHTML : '';
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Verifikasi...'; }
+    const submitBtn = $('totpSubmitBtn') || e.target.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Memverifikasi 2FA...';
+    }
 
     try {
         const res = await fetchAPI('/api/auth/verify-2fa', {
             method: 'POST',
             body: JSON.stringify({
                 temp_token: pending2FATempToken,
-                code: $('totpCodeInput').value
+                code: $('totpCodeInput').value.trim()
             })
         });
         currentUser = res.user;
@@ -2948,7 +2687,10 @@ $('totpVerifyForm').addEventListener('submit', async e => {
         alertBox.textContent = err.message;
         alertBox.style.display = 'block';
     } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
     }
 });
 
@@ -2956,9 +2698,12 @@ $('registerOwnerForm').addEventListener('submit', async e => {
     e.preventDefault();
     const alertBox = $('registerAlert');
     alertBox.style.display = 'none';
-    const btn = e.target.querySelector('button[type="submit"]');
-    const origHtml = btn ? btn.innerHTML : '';
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Membuat Akun...'; }
+    const submitBtn = $('regSubmitBtn') || e.target.querySelector('button[type="submit"]');
+    const originalBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Mendaftarkan...';
+    }
 
     try {
         const res = await fetchAPI('/api/auth/register', {
@@ -2976,7 +2721,10 @@ $('registerOwnerForm').addEventListener('submit', async e => {
         alertBox.textContent = err.message;
         alertBox.style.display = 'block';
     } finally {
-        if (btn) { btn.disabled = false; btn.innerHTML = origHtml; }
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
     }
 });
 
@@ -3111,14 +2859,9 @@ async function refreshDashboard() {
             fetchAPI(`/api/insights?month=${month}`)
         ]);
 
-        // Animated counters with neon glow
-        animateCounter($('kpiIncome'), sum.total_income);
-        animateCounter($('kpiExpense'), sum.total_expense);
-        animateCounter($('kpiBalance'), sum.balance);
-
-        $('kpiIncome').classList.add('neon-green');
-        $('kpiExpense').classList.add('neon-red');
-        $('kpiBalance').classList.add('neon-purple');
+        $('kpiIncome').textContent = formatIDR(sum.total_income);
+        $('kpiExpense').textContent = formatIDR(sum.total_expense);
+        $('kpiBalance').textContent = formatIDR(sum.balance);
 
         $('kpiSavingsRate').innerHTML = `<i class="ri-percent-line"></i> Rasio Tabungan: <strong>${ins.savings_rate}%</strong>`;
 
@@ -3694,6 +3437,10 @@ $('authBackdrop').addEventListener('click', e => {
     if (e.target === $('authBackdrop')) closeAuthModal();
 });
 
+document.querySelectorAll('.auth-card, .modal-box').forEach(el => {
+    el.addEventListener('click', e => e.stopPropagation());
+});
+
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
         document.querySelectorAll('.modal-shade.active').forEach(m => m.classList.remove('active'));
@@ -3715,72 +3462,7 @@ function escapeHtml(str) {
 window.addEventListener('DOMContentLoaded', () => {
     init3DHeroScene();
     checkCurrentSession();
-    initCursorGlow();
-    initScrollAnimations();
 });
-
-/* â”€â”€ 1. Subtle Ambient Cursor Light â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-function initCursorGlow() {
-    const glow = $('cursorGlow');
-    if (!glow) return;
-    let cx = 0, cy = 0, gx = 0, gy = 0;
-
-    document.addEventListener('mousemove', e => {
-        cx = e.clientX; cy = e.clientY;
-    });
-
-    function updateGlow() {
-        gx += (cx - gx) * 0.08;
-        gy += (cy - gy) * 0.08;
-        glow.style.left = gx + 'px';
-        glow.style.top = gy + 'px';
-        requestAnimationFrame(updateGlow);
-    }
-    updateGlow();
-
-    if ('ontouchstart' in window) glow.style.display = 'none';
-}
-
-/* â”€â”€ 2. Scroll Triggered Entrance Animations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-function initScrollAnimations() {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry, idx) => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('stagger-in');
-                entry.target.style.animationDelay = (idx * 0.06) + 's';
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.1 });
-
-    function observeCards() {
-        document.querySelectorAll('.feature-card, .kpi-card, .insight-pill, .chart-box').forEach(el => {
-            if (!el._observed) {
-                el._observed = true;
-                observer.observe(el);
-            }
-        });
-    }
-    observeCards();
-    setInterval(observeCards, 3000);
-}
-
-/* â”€â”€ 3. Smooth Number Counter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-function animateCounter(element, targetValue, prefix = 'Rp ', duration = 700) {
-    if (!element) return;
-    const startValue = 0;
-    const startTime = performance.now();
-
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const currentValue = Math.floor(startValue + (targetValue - startValue) * eased);
-        element.textContent = prefix + Number(currentValue).toLocaleString('id-ID');
-        if (progress < 1) requestAnimationFrame(update);
-    }
-    requestAnimationFrame(update);
-}
 </script>
 
 </body>
