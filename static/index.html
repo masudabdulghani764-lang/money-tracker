@@ -376,7 +376,7 @@
         .hero-3d-viewport {
             position: relative;
             width: 100%;
-            height: 540px;
+            height: 560px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -409,8 +409,8 @@
             z-index: 5;
             pointer-events: none;
         }
-        .floating-pill.pill-1 { top: 12%; left: -5%; }
-        .floating-pill.pill-2 { bottom: 14%; right: 0%; animation-delay: -2.5s; }
+        .floating-pill.pill-1 { top: 8%; left: 0%; }
+        .floating-pill.pill-2 { bottom: 8%; right: 0%; animation-delay: -2.5s; }
 
         @keyframes floatBubble {
             0%, 100% { transform: translateY(0); }
@@ -2140,161 +2140,244 @@ let txSearchDebounce = null;
 
 const $ = id => document.getElementById(id);
 
-/* ── 3D Three.js Scene Setup (Interactive 3D Dollar Sphere) ───────────── */
-let scene, camera, renderer, dollarSphere, orbitRing1, orbitRing2, coinGroup, starParticles;
+/* ── 3D Three.js Scene Setup (True 3D Minted Gold Medallion & Currency Artifact) ── */
+let scene, camera, renderer;
+let moneyVaultGroup, masterCoinMesh, orbitCoins = [], floatingBills = [];
+let gyroRingGold, gyroRingCyan, goldSparkles;
 let targetRotationX = 0, targetRotationY = 0;
 let mouseX = 0, mouseY = 0;
 let isDragging = false;
 let previousPointerPos = { x: 0, y: 0 };
 let velocityX = 0, velocityY = 0;
-const AUTO_ROTATE_SPEED = 0.009;
+const AUTO_ROTATE_SPEED = 0.008;
 
-function createDollarSphereTexture() {
+function createMasterCoinTexture(isBack = false) {
     const canvas = document.createElement('canvas');
-    canvas.width = 2048;
+    canvas.width = 1024;
     canvas.height = 1024;
     const ctx = canvas.getContext('2d');
+    const cx = 512, cy = 512;
 
-    // 1. Dark luxurious metallic obsidian background
-    const bgGrad = ctx.createLinearGradient(0, 0, 2048, 1024);
-    bgGrad.addColorStop(0, '#0a0815');
-    bgGrad.addColorStop(0.3, '#130f07');
-    bgGrad.addColorStop(0.7, '#1c150b');
-    bgGrad.addColorStop(1, '#060410');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, 2048, 1024);
+    // Deep brushed metallic obsidian-gold background
+    const bg = ctx.createRadialGradient(cx, cy, 50, cx, cy, 512);
+    bg.addColorStop(0, '#2e1c05');
+    bg.addColorStop(0.4, '#1b1204');
+    bg.addColorStop(0.75, '#120d03');
+    bg.addColorStop(1, '#080501');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 1024, 1024);
 
-    // Subtle cyber grid lines
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.08)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < 2048; x += 64) {
-        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 1024); ctx.stroke();
+    // Intricate Banknote Guilloche Security Pattern (Spirograph curves)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.24)';
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    for (let theta = 0; theta < Math.PI * 16; theta += 0.025) {
+        const R = 320, r = 70, d = 95;
+        const x = cx + (R - r) * Math.cos(theta) + d * Math.cos((R - r) * theta / r);
+        const y = cy + (R - r) * Math.sin(theta) - d * Math.sin((R - r) * theta / r);
+        if (theta === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
-    for (let y = 0; y < 1024; y += 64) {
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(2048, y); ctx.stroke();
+    ctx.stroke();
+
+    // Secondary fine cyan security mesh
+    ctx.strokeStyle = 'rgba(6, 182, 212, 0.15)';
+    ctx.lineWidth = 1.0;
+    ctx.beginPath();
+    for (let theta = 0; theta < Math.PI * 12; theta += 0.035) {
+        const R = 270, r = 54, d = 80;
+        const x = cx + (R - r) * Math.cos(theta) + d * Math.cos((R - r) * theta / r);
+        const y = cy + (R - r) * Math.sin(theta) - d * Math.sin((R - r) * theta / r);
+        if (theta === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
+    ctx.stroke();
+    ctx.restore();
 
-    // Helper to draw the Dollar Crest at (cx, cy)
-    function drawDollarCrest(cx, cy) {
-        ctx.save();
+    // Concentric milled border rings
+    ctx.save();
+    ctx.strokeStyle = 'rgba(254, 240, 138, 0.9)';
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 470, 0, Math.PI * 2);
+    ctx.stroke();
 
-        // Ambient golden bloom back-glow
-        const glowRadial = ctx.createRadialGradient(cx, cy, 50, cx, cy, 450);
-        glowRadial.addColorStop(0, 'rgba(245, 158, 11, 0.35)');
-        glowRadial.addColorStop(0.6, 'rgba(168, 85, 247, 0.15)');
-        glowRadial.addColorStop(1, 'transparent');
-        ctx.fillStyle = glowRadial;
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 440, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Milled beaded rim dots
+    const dotCount = 72;
+    for (let i = 0; i < dotCount; i++) {
+        const a = (i / dotCount) * Math.PI * 2;
+        ctx.fillStyle = i % 2 === 0 ? '#fef08a' : '#d97706';
         ctx.beginPath();
-        ctx.arc(cx, cy, 450, 0, Math.PI * 2);
+        ctx.arc(cx + Math.cos(a) * 455, cy + Math.sin(a) * 455, 3.5, 0, Math.PI * 2);
         ctx.fill();
+    }
 
-        // Outer concentric rings
-        ctx.shadowColor = '#f59e0b';
-        ctx.shadowBlur = 35;
-        ctx.strokeStyle = 'rgba(245, 158, 11, 0.8)';
-        ctx.lineWidth = 10;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 390, 0, Math.PI * 2);
-        ctx.stroke();
+    // Inner security ring
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.7)';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 330, 0, Math.PI * 2);
+    ctx.stroke();
 
-        ctx.strokeStyle = 'rgba(6, 182, 212, 0.6)';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 360, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Dashed ticks ring
-        ctx.setLineDash([16, 12]);
-        ctx.strokeStyle = 'rgba(254, 240, 138, 0.7)';
-        ctx.lineWidth = 7;
-        ctx.beginPath();
-        ctx.arc(cx, cy, 420, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Circular Text Stamp: "★ MONEY TRACKER BY MAS'UD ★ 2026 ★"
-        ctx.font = 'bold 24px Inter, sans-serif';
-        ctx.fillStyle = '#fef08a';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        const str = "★ MONEY TRACKER BY MAS'UD ★ FINANCIAL VAULT ★ 2026 ";
-        const radius = 325;
-        const step = (Math.PI * 2) / str.length;
-        for (let i = 0; i < str.length; i++) {
-            const angle = i * step - Math.PI / 2;
-            ctx.save();
-            ctx.translate(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
-            ctx.rotate(angle + Math.PI / 2);
-            ctx.fillText(str[i], 0, 0);
-            ctx.restore();
-        }
-
-        // Giant Golden Dollar Symbol ($)
-        ctx.font = '900 460px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-
-        // Outer Glow
-        ctx.shadowColor = '#f59e0b';
-        ctx.shadowBlur = 60;
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillText('$', cx, cy + 12);
-
-        // Metallic multi-stop gold gradient fill
-        ctx.shadowBlur = 10;
-        const goldGrad = ctx.createLinearGradient(cx - 160, cy - 220, cx + 160, cy + 220);
-        goldGrad.addColorStop(0, '#ffffff');
-        goldGrad.addColorStop(0.2, '#fef08a');
-        goldGrad.addColorStop(0.5, '#f59e0b');
-        goldGrad.addColorStop(0.8, '#d97706');
-        goldGrad.addColorStop(1, '#78350f');
-        ctx.fillStyle = goldGrad;
-        ctx.fillText('$', cx, cy + 12);
-
-        // White neon inner highlight stroke
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 7;
-        ctx.strokeText('$', cx, cy + 12);
-
+    // Circular Stamped Text
+    ctx.font = 'bold 22px Inter, sans-serif';
+    ctx.fillStyle = '#fef08a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const bannerText = isBack
+        ? "★ SMART FINANCIAL CONTROL ★ RFC 6238 VAULT ★ 2026 ★ "
+        : "★ MONEY TRACKER BY MAS'UD ★ FINANCIAL VAULT ★ 2026 ★ ";
+    const radius = 385;
+    const step = (Math.PI * 2) / bannerText.length;
+    for (let i = 0; i < bannerText.length; i++) {
+        const a = i * step - Math.PI / 2;
+        ctx.save();
+        ctx.translate(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius);
+        ctx.rotate(a + Math.PI / 2);
+        ctx.fillText(bannerText[i], 0, 0);
         ctx.restore();
     }
 
-    // Draw on Front Face (cx = 512) and Back Face (cx = 1536)
-    drawDollarCrest(512, 512);
-    drawDollarCrest(1536, 512);
+    if (!isBack) {
+        // FRONT FACE: Giant 3D Golden Dollar Emblem ($)
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 45;
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '900 420px Inter, sans-serif';
+        ctx.fillText('$', cx, cy + 18);
 
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.ClampToEdgeWrapping;
-    return texture;
+        // Metallic multi-stop gold gradient fill
+        ctx.shadowBlur = 8;
+        const goldG = ctx.createLinearGradient(cx - 150, cy - 200, cx + 150, cy + 200);
+        goldG.addColorStop(0, '#ffffff');
+        goldG.addColorStop(0.2, '#fef08a');
+        goldG.addColorStop(0.5, '#f59e0b');
+        goldG.addColorStop(0.8, '#d97706');
+        goldG.addColorStop(1, '#78350f');
+        ctx.fillStyle = goldG;
+        ctx.fillText('$', cx, cy + 18);
+
+        // Specular inner stroke
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 6;
+        ctx.strokeText('$', cx, cy + 18);
+    } else {
+        // BACK FACE: High-Tech Security Vault Crest
+        ctx.shadowColor = '#06b6d4';
+        ctx.shadowBlur = 35;
+        ctx.fillStyle = '#06b6d4';
+        ctx.font = '900 180px Inter, sans-serif';
+        ctx.fillText('◈', cx, cy - 20);
+
+        ctx.font = '800 40px Inter, sans-serif';
+        ctx.fillStyle = '#fef08a';
+        ctx.shadowColor = '#f59e0b';
+        ctx.shadowBlur = 10;
+        ctx.fillText('ENCRYPTED VAULT', cx, cy + 130);
+        ctx.font = '600 24px Inter, sans-serif';
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('2FA • SECURE ASSETS', cx, cy + 175);
+    }
+
+    ctx.restore();
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
 }
 
-function createCoinDollarTexture() {
+function createCoinRimTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 1024;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    for (let x = 0; x < 1024; x += 8) {
+        ctx.fillStyle = (x % 16 === 0) ? '#fef08a' : '#78350f';
+        ctx.fillRect(x, 0, 4, 64);
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(x + 4, 0, 4, 64);
+    }
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+}
+
+function createBanknoteTexture() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 280;
+    const ctx = canvas.getContext('2d');
+
+    // Translucent dark emerald & cyber gold banknote
+    const bg = ctx.createLinearGradient(0, 0, 512, 280);
+    bg.addColorStop(0, 'rgba(6, 78, 59, 0.95)');
+    bg.addColorStop(0.5, 'rgba(4, 47, 46, 0.92)');
+    bg.addColorStop(1, 'rgba(2, 44, 34, 0.95)');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 512, 280);
+
+    // Ornate guilloche banknote frame
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(12, 12, 488, 256);
+    ctx.strokeStyle = '#34d399';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(18, 18, 476, 244);
+
+    // Corner denominations
+    ctx.fillStyle = '#fef08a';
+    ctx.font = 'bold 24px Inter, monospace';
+    ctx.fillText('$', 28, 48);
+    ctx.fillText('$', 470, 48);
+    ctx.fillText('$', 28, 250);
+    ctx.fillText('$', 470, 250);
+
+    // Center currency crest
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.45)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(256, 140, 75, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.font = '900 86px Inter, sans-serif';
+    ctx.fillStyle = '#fef08a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('$', 256, 142);
+
+    ctx.font = 'bold 15px Inter, sans-serif';
+    ctx.fillStyle = '#a7f3d0';
+    ctx.fillText("MONEY TRACKER • MAS'UD VAULT", 256, 230);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    return tex;
+}
+
+function createMiniCoinTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
     canvas.height = 256;
     const ctx = canvas.getContext('2d');
-
-    // Gold coin background
-    const bgGrad = ctx.createRadialGradient(128, 128, 20, 128, 128, 128);
-    bgGrad.addColorStop(0, '#fef08a');
-    bgGrad.addColorStop(0.7, '#f59e0b');
-    bgGrad.addColorStop(1, '#b45309');
-    ctx.fillStyle = bgGrad;
+    const bg = ctx.createRadialGradient(128, 128, 20, 128, 128, 128);
+    bg.addColorStop(0, '#fef08a');
+    bg.addColorStop(0.7, '#f59e0b');
+    bg.addColorStop(1, '#b45309');
+    ctx.fillStyle = bg;
     ctx.beginPath(); ctx.arc(128, 128, 120, 0, Math.PI * 2); ctx.fill();
-
-    // Border
     ctx.strokeStyle = '#78350f';
-    ctx.lineWidth = 6;
+    ctx.lineWidth = 7;
     ctx.stroke();
-
-    // Dollar sign
     ctx.fillStyle = '#451a03';
     ctx.font = '900 130px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('$', 128, 134);
-
     return new THREE.CanvasTexture(canvas);
 }
 
@@ -2306,117 +2389,186 @@ function init3DHeroScene() {
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // 1. Scene
+    // 1. Scene & Camera
     scene = new THREE.Scene();
-
-    // 2. Camera
     camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
-    camera.position.z = 7.6;
+    camera.position.z = 8.0;
 
-    // 3. Renderer
+    // 2. Renderer
     renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // 4. Central 3D Rotating Dollar Sphere
-    const dollarTexture = createDollarSphereTexture();
-    const sphereGeometry = new THREE.SphereGeometry(1.85, 64, 64);
-    const sphereMaterial = new THREE.MeshPhysicalMaterial({
-        map: dollarTexture,
-        bumpMap: dollarTexture,
-        bumpScale: 0.08,
-        emissiveMap: dollarTexture,
-        emissive: 0x241804,
-        emissiveIntensity: 0.35,
+    // 3. Central Money Vault Group
+    moneyVaultGroup = new THREE.Group();
+    scene.add(moneyVaultGroup);
+
+    // 4. The Master 3D Minted Gold Medallion
+    const frontTex = createMasterCoinTexture(false);
+    const backTex = createMasterCoinTexture(true);
+    const rimTex = createCoinRimTexture();
+
+    const coinGeo = new THREE.CylinderGeometry(1.85, 1.85, 0.34, 64);
+    const rimMat = new THREE.MeshStandardMaterial({
+        color: 0xf59e0b,
+        map: rimTex,
+        bumpMap: rimTex,
+        bumpScale: 0.05,
+        metalness: 0.94,
         roughness: 0.22,
-        metalness: 0.85,
+    });
+    const frontMat = new THREE.MeshPhysicalMaterial({
+        map: frontTex,
+        bumpMap: frontTex,
+        bumpScale: 0.14,
+        metalness: 0.92,
+        roughness: 0.18,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.12,
+        clearcoatRoughness: 0.08,
     });
-    dollarSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-    scene.add(dollarSphere);
+    const backMat = new THREE.MeshPhysicalMaterial({
+        map: backTex,
+        bumpMap: backTex,
+        bumpScale: 0.14,
+        metalness: 0.92,
+        roughness: 0.18,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.08,
+    });
 
-    // Glowing Holographic Orbital Rings
-    const ringGeo1 = new THREE.TorusGeometry(2.35, 0.035, 16, 120);
-    const ringMat1 = new THREE.MeshBasicMaterial({
-        color: 0x06b6d4,
+    masterCoinMesh = new THREE.Mesh(coinGeo, [rimMat, frontMat, backMat]);
+    masterCoinMesh.rotation.x = Math.PI / 2;
+    moneyVaultGroup.add(masterCoinMesh);
+
+    // Sculpted Gold Beveled Rims (Torus) - gives coin minted depth
+    const bevelRimGeo = new THREE.TorusGeometry(1.85, 0.035, 16, 80);
+    const bevelRimMat = new THREE.MeshStandardMaterial({
+        color: 0xfef08a,
+        metalness: 0.95,
+        roughness: 0.15,
+    });
+    const topBevel = new THREE.Mesh(bevelRimGeo, bevelRimMat);
+    topBevel.rotation.x = Math.PI / 2;
+    topBevel.position.y = 0.17;
+    masterCoinMesh.add(topBevel);
+
+    const bottomBevel = new THREE.Mesh(bevelRimGeo, bevelRimMat);
+    bottomBevel.rotation.x = Math.PI / 2;
+    bottomBevel.position.y = -0.17;
+    masterCoinMesh.add(bottomBevel);
+
+    // Initial slight tilt for gorgeous 3D perspective
+    moneyVaultGroup.rotation.x = 0.16;
+    moneyVaultGroup.rotation.z = -0.05;
+
+    // 5. Floating 3D Holographic Currency Notes / Cash Bills
+    floatingBills = [];
+    const billTex = createBanknoteTexture();
+    const billGeo = new THREE.PlaneGeometry(1.35, 0.74);
+    const billMat = new THREE.MeshPhysicalMaterial({
+        map: billTex,
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.88,
+        roughness: 0.2,
+        metalness: 0.4,
+        clearcoat: 0.8,
+        side: THREE.DoubleSide,
     });
-    orbitRing1 = new THREE.Mesh(ringGeo1, ringMat1);
-    orbitRing1.rotation.x = Math.PI / 3;
-    orbitRing1.rotation.y = Math.PI / 6;
-    scene.add(orbitRing1);
 
-    const ringGeo2 = new THREE.TorusGeometry(2.55, 0.02, 16, 120);
-    const ringMat2 = new THREE.MeshBasicMaterial({
-        color: 0xa855f7,
+    for (let i = 0; i < 3; i++) {
+        const bill = new THREE.Mesh(billGeo, billMat);
+        const baseAngle = (i / 3) * Math.PI * 2;
+        bill.userData = {
+            baseAngle: baseAngle,
+            radius: 2.5 + (i * 0.1),
+            speed: 0.007 + (i * 0.002),
+            yBob: i * 1.6,
+            rotSpeed: 0.01 + (i * 0.004),
+        };
+        scene.add(bill);
+        floatingBills.push(bill);
+    }
+
+    // 6. Orbiting 3D Small Gold Coins with $ Emblem
+    orbitCoins = [];
+    const miniTex = createMiniCoinTexture();
+    const miniGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.07, 24);
+    const miniSideMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.95, roughness: 0.25 });
+    const miniFaceMat = new THREE.MeshStandardMaterial({ map: miniTex, metalness: 0.9, roughness: 0.2 });
+    const miniMats = [miniSideMat, miniFaceMat, miniFaceMat];
+
+    for (let i = 0; i < 4; i++) {
+        const coin = new THREE.Mesh(miniGeo, miniMats);
+        const angle = (i / 4) * Math.PI * 2;
+        coin.userData = {
+            angle: angle,
+            speed: 0.01 + (i % 2) * 0.003,
+            radius: 2.75,
+            yRatio: (i % 2 === 0 ? 0.35 : -0.3),
+        };
+        scene.add(coin);
+        orbitCoins.push(coin);
+    }
+
+    // 7. Gyroscopic Telemetry Orbit Rings
+    const gRingGeo1 = new THREE.TorusGeometry(2.4, 0.02, 16, 120);
+    const gRingMat1 = new THREE.MeshBasicMaterial({
+        color: 0xf59e0b,
+        transparent: true,
+        opacity: 0.55,
+    });
+    gyroRingGold = new THREE.Mesh(gRingGeo1, gRingMat1);
+    gyroRingGold.rotation.x = Math.PI / 3;
+    gyroRingGold.rotation.y = Math.PI / 6;
+    scene.add(gyroRingGold);
+
+    const gRingGeo2 = new THREE.TorusGeometry(2.55, 0.015, 16, 120);
+    const gRingMat2 = new THREE.MeshBasicMaterial({
+        color: 0x06b6d4,
         transparent: true,
         opacity: 0.45,
     });
-    orbitRing2 = new THREE.Mesh(ringGeo2, ringMat2);
-    orbitRing2.rotation.x = -Math.PI / 4;
-    orbitRing2.rotation.z = Math.PI / 5;
-    scene.add(orbitRing2);
+    gyroRingCyan = new THREE.Mesh(gRingGeo2, gRingMat2);
+    gyroRingCyan.rotation.x = -Math.PI / 4;
+    gyroRingCyan.rotation.z = Math.PI / 5;
+    scene.add(gyroRingCyan);
 
-    // 5. Orbiting 3D Gold Coins with $ Emblem
-    const coinTexture = createCoinDollarTexture();
-    coinGroup = new THREE.Group();
-    scene.add(coinGroup);
-
-    const coinGeo = new THREE.CylinderGeometry(0.38, 0.38, 0.07, 24);
-    const coinSideMat = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.9, roughness: 0.3 });
-    const coinFaceMat = new THREE.MeshStandardMaterial({ map: coinTexture, metalness: 0.85, roughness: 0.25 });
-    const coinMaterials = [coinSideMat, coinFaceMat, coinFaceMat];
-
-    for (let i = 0; i < 4; i++) {
-        const coin = new THREE.Mesh(coinGeo, coinMaterials);
-        const angle = (i / 4) * Math.PI * 2;
-        const radius = 3.15;
-        coin.position.x = Math.cos(angle) * radius;
-        coin.position.y = Math.sin(angle) * (radius * 0.45);
-        coin.position.z = Math.sin(angle * 2) * 0.9;
-        coin.rotation.x = Math.PI / 2;
-        coin.rotation.z = angle;
-        coinGroup.add(coin);
+    // 8. Ambient 3D Gold Dust Particles
+    const sparkleCount = 600;
+    const sparkleGeo = new THREE.BufferGeometry();
+    const sparklePositions = new Float32Array(sparkleCount * 3);
+    for (let i = 0; i < sparkleCount * 3; i += 3) {
+        sparklePositions[i] = (Math.random() - 0.5) * 20;
+        sparklePositions[i + 1] = (Math.random() - 0.5) * 20;
+        sparklePositions[i + 2] = (Math.random() - 0.5) * 14;
     }
-
-    // 6. Ambient 3D Starfield Particles
-    const starCount = 700;
-    const starGeo = new THREE.BufferGeometry();
-    const starPositions = new Float32Array(starCount * 3);
-    for (let i = 0; i < starCount * 3; i += 3) {
-        starPositions[i] = (Math.random() - 0.5) * 20;
-        starPositions[i + 1] = (Math.random() - 0.5) * 20;
-        starPositions[i + 2] = (Math.random() - 0.5) * 14;
-    }
-    starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
-    const starMat = new THREE.PointsMaterial({
-        color: 0xf59e0b,
-        size: 0.05,
+    sparkleGeo.setAttribute('position', new THREE.BufferAttribute(sparklePositions, 3));
+    const sparkleMat = new THREE.PointsMaterial({
+        color: 0xfef08a,
+        size: 0.045,
         transparent: true,
-        opacity: 0.65,
+        opacity: 0.7,
     });
-    starParticles = new THREE.Points(starGeo, starMat);
-    scene.add(starParticles);
+    goldSparkles = new THREE.Points(sparkleGeo, sparkleMat);
+    scene.add(goldSparkles);
 
-    // 7. Dynamic Studio Lights
+    // 9. Studio Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.1);
     scene.add(ambientLight);
 
-    const goldPoint = new THREE.PointLight(0xf59e0b, 55, 50);
+    const goldPoint = new THREE.PointLight(0xf59e0b, 50, 50);
     goldPoint.position.set(4, 3, 5);
     scene.add(goldPoint);
 
-    const cyanLight = new THREE.PointLight(0x06b6d4, 40, 50);
+    const cyanLight = new THREE.PointLight(0x06b6d4, 38, 50);
     cyanLight.position.set(-4, -3, 3);
     scene.add(cyanLight);
 
-    const purpleLight = new THREE.PointLight(0xa855f7, 35, 50);
+    const purpleLight = new THREE.PointLight(0xa855f7, 32, 50);
     purpleLight.position.set(0, 5, -2);
     scene.add(purpleLight);
 
-    // 8. Interactive Drag-to-Rotate & Parallax Listeners
+    // 10. Interactive Drag-to-Rotate & Parallax Listeners
     canvas.addEventListener('pointerdown', e => {
         isDragging = true;
         previousPointerPos = { x: e.clientX, y: e.clientY };
@@ -2429,12 +2581,12 @@ function init3DHeroScene() {
         mouseX = (e.clientX / window.innerWidth) * 2 - 1;
         mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
 
-        if (isDragging && dollarSphere) {
+        if (isDragging && moneyVaultGroup) {
             const deltaX = e.clientX - previousPointerPos.x;
             const deltaY = e.clientY - previousPointerPos.y;
 
-            dollarSphere.rotation.y += deltaX * 0.007;
-            dollarSphere.rotation.x += deltaY * 0.007;
+            moneyVaultGroup.rotation.y += deltaX * 0.007;
+            moneyVaultGroup.rotation.x += deltaY * 0.007;
 
             velocityY = deltaX * 0.007;
             velocityX = deltaY * 0.007;
@@ -2470,39 +2622,55 @@ function onWindowResize() {
 function animate3D() {
     requestAnimationFrame(animate3D);
 
-    if (dollarSphere) {
+    if (moneyVaultGroup) {
         if (!isDragging) {
             // Smooth inertia decay after user release
-            dollarSphere.rotation.y += velocityY;
-            dollarSphere.rotation.x += velocityX;
+            moneyVaultGroup.rotation.y += velocityY;
+            moneyVaultGroup.rotation.x += velocityX;
             velocityX *= 0.92;
             velocityY *= 0.92;
 
-            // Continuous elegant rotation
-            dollarSphere.rotation.y += AUTO_ROTATE_SPEED;
+            // Continuous elegant rotation showcasing true 3D thickness, front and back
+            moneyVaultGroup.rotation.y += AUTO_ROTATE_SPEED;
 
             // Gentle parallax tilt following cursor
-            targetRotationX = -mouseY * 0.22;
-            dollarSphere.rotation.x += (targetRotationX - dollarSphere.rotation.x) * 0.04;
+            targetRotationX = 0.16 - mouseY * 0.2;
+            moneyVaultGroup.rotation.x += (targetRotationX - moneyVaultGroup.rotation.x) * 0.04;
         }
     }
 
-    if (orbitRing1) {
-        orbitRing1.rotation.z += 0.008;
+    // Floating Banknote Notes
+    floatingBills.forEach((bill, i) => {
+        bill.userData.baseAngle += bill.userData.speed;
+        const rad = bill.userData.radius;
+        bill.position.x = Math.cos(bill.userData.baseAngle) * rad;
+        bill.position.z = Math.sin(bill.userData.baseAngle) * rad;
+        bill.position.y = Math.sin(Date.now() * 0.0018 + bill.userData.yBob) * 0.45;
+        bill.rotation.y += bill.userData.rotSpeed;
+        bill.rotation.z = Math.sin(Date.now() * 0.0012 + i) * 0.18;
+    });
+
+    // Orbiting mini gold coins
+    orbitCoins.forEach(coin => {
+        coin.userData.angle += coin.userData.speed;
+        const rad = coin.userData.radius;
+        coin.position.x = Math.cos(coin.userData.angle) * rad;
+        coin.position.z = Math.sin(coin.userData.angle) * rad;
+        coin.position.y = Math.sin(coin.userData.angle * 2) * (rad * coin.userData.yRatio);
+        coin.rotation.x += 0.02;
+        coin.rotation.y += 0.03;
+    });
+
+    // Gyroscopic rings
+    if (gyroRingGold) {
+        gyroRingGold.rotation.z += 0.007;
     }
-    if (orbitRing2) {
-        orbitRing2.rotation.y -= 0.006;
+    if (gyroRingCyan) {
+        gyroRingCyan.rotation.z -= 0.006;
     }
 
-    if (coinGroup) {
-        coinGroup.rotation.z += 0.006;
-        coinGroup.children.forEach(c => {
-            c.rotation.y += 0.02;
-        });
-    }
-
-    if (starParticles) {
-        starParticles.rotation.y -= 0.0006;
+    if (goldSparkles) {
+        goldSparkles.rotation.y -= 0.0006;
     }
 
     renderer.render(scene, camera);
