@@ -1913,6 +1913,9 @@
                 <button class="nav-pill active" onclick="activateTab('dashboard')">
                     <i class="ri-dashboard-3-line"></i> Dashboard
                 </button>
+                <button class="nav-pill" onclick="activateTab('analytics')">
+                    <i class="ri-line-chart-line"></i> Analitik
+                </button>
                 <button class="nav-pill" onclick="activateTab('transactions')">
                     <i class="ri-exchange-dollar-line"></i> Transaksi
                 </button>
@@ -2056,6 +2059,164 @@
                     </button>
                 </div>
                 <div class="tx-stream" id="dashboardRecentList"></div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             TAB: ANALYTICS (VAULT WEALTH INTELLIGENCE)
+             ═══════════════════════════════════════════════════════════════ -->
+        <section class="tab-pane" id="paneAnalytics">
+            <div class="dashboard-topbar">
+                <div>
+                    <h2>Analitik Finansial & Inteligensi Vault</h2>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-top:2px;">
+                        Kesehatan finansial, evaluasi aturan 50/30/20, dan simulator akumulasi aset
+                    </p>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <div class="date-control">
+                        <i class="ri-calendar-event-line" style="color:var(--text-secondary)"></i>
+                        <input type="month" id="analyticsMonthInput" onchange="loadVaultAnalytics()">
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="exportCSV()">
+                        <i class="ri-file-excel-line"></i> Ekspor Laporan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Health Score & Core Ratios Grid -->
+            <div class="kpi-grid" style="margin-bottom:24px;">
+                <!-- Health Score Card -->
+                <div class="kpi-card balance" style="background:linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08)); border-color:rgba(168,85,247,0.3);">
+                    <div class="kpi-label">
+                        <span>Skor Kesehatan Finansial</span>
+                        <i class="ri-heart-pulse-fill" style="color:#10b981; font-size:20px;"></i>
+                    </div>
+                    <div style="display:flex; align-items:baseline; gap:12px; margin-top:6px;">
+                        <span class="score-number" id="vaultHealthScore" style="font-size:36px; font-weight:900; color:#34d399;">—</span>
+                        <span class="score-badge" id="vaultHealthGrade" style="background:rgba(16,185,129,0.2); color:#34d399; padding:4px 10px; border-radius:12px; font-size:12px; font-weight:700;">Menghitung...</span>
+                    </div>
+                    <div class="kpi-sub" id="vaultHealthStatus" style="color:var(--text-secondary); margin-top:8px;">
+                        Menganalisis rasio arus kas...
+                    </div>
+                </div>
+
+                <!-- Savings Rate Card -->
+                <div class="kpi-card income">
+                    <div class="kpi-label">
+                        <span>Rasio Tabungan Bulan Ini</span>
+                        <i class="ri-percent-line" style="color:var(--green); font-size:20px;"></i>
+                    </div>
+                    <div class="kpi-val tabular" id="vaultSavingsRateVal">0%</div>
+                    <div class="kpi-sub" id="vaultSavingsStatus">
+                        <i class="ri-information-line"></i> Target minimal sehat: 20%
+                    </div>
+                </div>
+
+                <!-- Emergency Runway Card -->
+                <div class="kpi-card expense">
+                    <div class="kpi-label">
+                        <span>Ketahanan Dana Darurat (Runway)</span>
+                        <i class="ri-shield-check-line" style="color:#06b6d4; font-size:20px;"></i>
+                    </div>
+                    <div class="kpi-val tabular" id="vaultRunwayVal">0 Bulan</div>
+                    <div class="kpi-sub" id="vaultRunwaySub">
+                        Berdasarkan pengeluaran rata-rata
+                    </div>
+                </div>
+            </div>
+
+            <!-- 50 / 30 / 20 Rule Analysis Section -->
+            <div class="chart-box" style="margin-bottom:24px;">
+                <div class="chart-box-header">
+                    <div>
+                        <h3><i class="ri-pie-chart-2-line" style="color:#a855f7"></i> Evaluasi Alokasi 50 / 30 / 20 Riil Anda</h3>
+                        <span style="font-size:12px; color:var(--text-muted)">Perbandingan realisasi pengeluaran terhadap standar perencana keuangan</span>
+                    </div>
+                    <span class="masud-badge">BERDASARKAN DATA TRANSAKSI</span>
+                </div>
+
+                <div style="padding:10px 0 6px;">
+                    <div class="multi-progress-bar" style="height:18px;">
+                        <div class="progress-segment seg-needs" id="vaultBarNeeds" style="width:50%" title="Kebutuhan"></div>
+                        <div class="progress-segment seg-wants" id="vaultBarWants" style="width:30%" title="Keinginan"></div>
+                        <div class="progress-segment seg-savings" id="vaultBarSavings" style="width:20%" title="Tabungan"></div>
+                    </div>
+                </div>
+
+                <div class="allocation-legend" style="margin-top:12px;">
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#6366f1;"></span>
+                        <span>Kebutuhan Pokok: <strong id="vaultNeedsVal" class="tabular">Rp 0</strong> (<span id="vaultNeedsPct">0%</span> vs target 50%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#a855f7;"></span>
+                        <span>Keinginan & Gaya Hidup: <strong id="vaultWantsVal" class="tabular">Rp 0</strong> (<span id="vaultWantsPct">0%</span> vs target 30%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot" style="background:#10b981;"></span>
+                        <span>Tabungan & Investasi: <strong id="vaultSavingsVal" class="tabular">Rp 0</strong> (<span id="vaultSavingsPct">0%</span> vs target 20%)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section: 6 Months Trend & Category Composition -->
+            <div class="charts-row" style="margin-bottom:24px;">
+                <div class="chart-box">
+                    <div class="chart-box-header">
+                        <h3><i class="ri-line-chart-line" style="color:var(--green)"></i> Tren Arus Kas Multi-Bulan</h3>
+                        <span style="font-size:11px; color:var(--text-muted)">Pemasukan vs Pengeluaran</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="vaultTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-box">
+                    <div class="chart-box-header">
+                        <h3><i class="ri-donut-chart-line" style="color:var(--cyan)"></i> Komposisi Kategori Bulan Ini</h3>
+                        <span style="font-size:11px; color:var(--text-muted)">Porsi Pengeluaran</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="vaultCategoryRadarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive What-If Wealth Growth Simulator in Vault -->
+            <div class="chart-box" style="margin-bottom:20px;">
+                <div class="chart-box-header">
+                    <div>
+                        <h3><i class="ri-magic-line" style="color:var(--accent-light)"></i> Simulator Akselerasi Tabungan (*What-If Scenario*)</h3>
+                        <span style="font-size:12px; color:var(--text-muted)">Uji bagaimana tambahan tabungan rutin bulanan mempercepat akumulasi aset Anda</span>
+                    </div>
+                </div>
+
+                <div style="padding:16px 0;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+                        <span style="font-size:13px; font-weight:600; color:var(--text-secondary);">Tambahan Tabungan Ekstra / Bulan:</span>
+                        <span class="tabular" id="vaultWhatIfExtraLabel" style="font-size:18px; font-weight:800; color:var(--green);">+ Rp 1.000.000 / bln</span>
+                    </div>
+                    <input type="range" id="vaultWhatIfSlider" min="200000" max="10000000" step="100000" value="1000000" oninput="updateVaultWhatIf(this.value)" style="width:100%; height:8px; accent-color:#10b981; cursor:pointer;">
+                </div>
+
+                <div class="sim-metrics-grid" style="margin-bottom:10px;">
+                    <div class="sim-metric-card">
+                        <div class="metric-head"><span>Proyeksi Akumulasi 1 Tahun</span><i class="ri-calendar-line" style="color:#f59e0b"></i></div>
+                        <div class="metric-val tabular" id="vaultWhatIf1Yr" style="color:#fef08a;">Rp 12.000.000</div>
+                        <div class="metric-sub">Tabungan ekstra murni</div>
+                    </div>
+                    <div class="sim-metric-card">
+                        <div class="metric-head"><span>Proyeksi Akumulasi 3 Tahun</span><i class="ri-rocket-line" style="color:#06b6d4"></i></div>
+                        <div class="metric-val tabular" id="vaultWhatIf3Yr" style="color:#38bdf8;">Rp 39.600.000</div>
+                        <div class="metric-sub">+ Estimasi imbal hasil 5%</div>
+                    </div>
+                    <div class="sim-metric-card highlight">
+                        <div class="metric-head"><span>Proyeksi Akumulasi 5 Tahun</span><i class="ri-vip-diamond-line" style="color:#10b981"></i></div>
+                        <div class="metric-val tabular" id="vaultWhatIf5Yr" style="color:#34d399;">Rp 73.200.000</div>
+                        <div class="metric-sub">+ Efek bunga majemuk (*compound*)</div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -3089,7 +3250,7 @@ function activateTab(tabId) {
     document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
 
-    const tabButtons = { dashboard: 0, transactions: 1, budgets: 2, recurring: 3, categories: 4, security: 5 };
+    const tabButtons = { dashboard: 0, analytics: 1, transactions: 2, budgets: 3, recurring: 4, categories: 5, security: 6 };
     const pill = document.querySelectorAll('.nav-pill')[tabButtons[tabId]];
     if (pill) pill.classList.add('active');
 
@@ -3098,6 +3259,7 @@ function activateTab(tabId) {
     if (pane) pane.classList.add('active');
 
     if (tabId === 'dashboard') refreshDashboard();
+    if (tabId === 'analytics') loadVaultAnalytics();
     if (tabId === 'transactions') loadTxList();
     if (tabId === 'budgets') loadBudgets();
     if (tabId === 'recurring') loadRecurring();
@@ -3232,6 +3394,7 @@ function onLoginSuccess() {
 
     const currentM = getCurrentMonthString();
     $('dashMonthInput').value = currentM;
+    $('analyticsMonthInput').value = currentM;
     $('txFilterMonth').value = currentM;
     $('budgetMonthInput').value = currentM;
 
@@ -3522,6 +3685,272 @@ function renderDonutChart(byCategoryData) {
             }
         }
     });
+}
+
+/* ── Vault Financial Analytics & Intelligence ─────────────────────────── */
+let vaultTrendChart = null;
+let vaultCategoryRadarChart = null;
+
+async function loadVaultAnalytics() {
+    const month = $('analyticsMonthInput').value || $('dashMonthInput').value || getCurrentMonthString();
+    $('analyticsMonthInput').value = month;
+
+    try {
+        const [sum, ins] = await Promise.all([
+            fetchAPI(`/api/summary?month=${month}`),
+            fetchAPI(`/api/insights?month=${month}`)
+        ]);
+
+        const income = sum.total_income || 0;
+        const expense = sum.total_expense || 0;
+        const balance = sum.balance || 0;
+        const savingsRate = ins.savings_rate || 0;
+
+        // 1. Health Score Calculation
+        let score = 50;
+        let grade = 'C (Cukup)';
+        let status = 'Arus kas seimbang, usahakan menambah porsi tabungan rutin.';
+
+        if (income > 0) {
+            if (savingsRate >= 30) {
+                score = Math.min(98, 90 + Math.round(savingsRate / 5));
+                grade = 'A+ (Sangat Sehat)';
+                status = `Luar biasa! Rasio tabungan Anda ${savingsRate}%, jauh di atas standar aman 20%. Pertahankan disiplin aset ini.`;
+            } else if (savingsRate >= 20) {
+                score = 85;
+                grade = 'A (Sehat)';
+                status = `Bagus! Anda berhasil menyisihkan ${savingsRate}% dari pendapatan untuk masa depan, memenuhi standar internasional.`;
+            } else if (savingsRate >= 10) {
+                score = 72;
+                grade = 'B (Cukup Sehat)';
+                status = `Rasio tabungan ${savingsRate}%. Tingkatkan sedikit lagi menuju standar aman 20%.`;
+            } else if (savingsRate > 0) {
+                score = 60;
+                grade = 'C (Waspada)';
+                status = `Tabungan ${savingsRate}% masih tipis. Evaluasi pos pengeluaran gaya hidup untuk memperbesar surplus.`;
+            } else {
+                score = 42;
+                grade = 'D (Defisit)';
+                status = `Peringatan: Pengeluaran (${formatIDR(expense)}) melebihi pemasukan (${formatIDR(income)}) bulan ini.`;
+            }
+        } else if (expense > 0) {
+            score = 40;
+            grade = 'D (Defisit)';
+            status = 'Belum ada pemasukan tercatat, hanya pengeluaran.';
+        } else {
+            score = 75;
+            grade = 'Netral';
+            status = 'Belum ada transaksi bulan ini. Catat transaksi untuk melihat skor akurat.';
+        }
+
+        $('vaultHealthScore').textContent = score;
+        $('vaultHealthGrade').textContent = grade;
+        $('vaultHealthStatus').textContent = status;
+        $('vaultSavingsRateVal').textContent = `${savingsRate}%`;
+
+        if (savingsRate >= 20) {
+            $('vaultSavingsStatus').innerHTML = '<i class="ri-checkbox-circle-fill" style="color:var(--green)"></i> Memenuhi target minimal 20%';
+        } else if (savingsRate > 0) {
+            $('vaultSavingsStatus').innerHTML = '<i class="ri-information-line" style="color:var(--amber)"></i> Target minimal sehat: 20%';
+        } else {
+            $('vaultSavingsStatus').innerHTML = '<i class="ri-alert-line" style="color:var(--red)"></i> Arus kas defisit';
+        }
+
+        // 2. Runway (Ketahanan Dana Darurat)
+        const dailyAvg = ins.daily_avg || 0;
+        const monthlyBurn = dailyAvg * 30 || expense || 1;
+        let runwayText = '0 Bulan';
+        if (balance > 0 && monthlyBurn > 0) {
+            const months = (balance / monthlyBurn).toFixed(1);
+            runwayText = `${months} Bulan`;
+            $('vaultRunwaySub').textContent = `Mampu membiayai pengeluaran selama ${months} bulan tanpa pemasukan.`;
+        } else if (income === 0 && expense === 0) {
+            runwayText = '—';
+            $('vaultRunwaySub').textContent = 'Belum ada data pengeluaran rutin.';
+        } else {
+            runwayText = '< 1 Bulan';
+            $('vaultRunwaySub').textContent = 'Perlu segera menumpuk saldo dana darurat minimal 3-6 bulan.';
+        }
+        $('vaultRunwayVal').textContent = runwayText;
+
+        // 3. 50/30/20 Breakdown
+        let needsTotal = 0;
+        let wantsTotal = 0;
+        let savingsTotal = balance > 0 ? balance : 0;
+
+        const needsKeywords = ['makan', 'food', 'rumah', 'listrik', 'wifi', 'tagihan', 'transport', 'kesehatan', 'obat', 'sewa', 'pendidikan', 'pulsa'];
+        (sum.by_category || []).forEach(c => {
+            if (c.type === 'expense') {
+                const nameLow = (c.name || '').toLowerCase();
+                if (needsKeywords.some(k => nameLow.includes(k))) {
+                    needsTotal += c.total;
+                } else {
+                    wantsTotal += c.total;
+                }
+            }
+        });
+
+        const totalSpentOrSaved = Math.max(income, needsTotal + wantsTotal + savingsTotal, 1);
+        const needsPct = Math.round((needsTotal / totalSpentOrSaved) * 100);
+        const wantsPct = Math.round((wantsTotal / totalSpentOrSaved) * 100);
+        const savingsPct = Math.max(0, 100 - needsPct - wantsPct);
+
+        $('vaultBarNeeds').style.width = `${Math.min(needsPct, 100)}%`;
+        $('vaultBarWants').style.width = `${Math.min(wantsPct, 100)}%`;
+        $('vaultBarSavings').style.width = `${Math.min(savingsPct, 100)}%`;
+
+        $('vaultNeedsVal').textContent = formatIDR(needsTotal);
+        $('vaultNeedsPct').textContent = `${needsPct}%`;
+        $('vaultWantsVal').textContent = formatIDR(wantsTotal);
+        $('vaultWantsPct').textContent = `${wantsPct}%`;
+        $('vaultSavingsVal').textContent = formatIDR(savingsTotal);
+        $('vaultSavingsPct').textContent = `${savingsPct}%`;
+
+        // 4. Render Trend & Category Composition Charts
+        renderVaultTrendChart(month, income, expense);
+        renderVaultCategoryChart(sum.by_category || []);
+
+        // 5. Update What-If Simulator
+        updateVaultWhatIf($('vaultWhatIfSlider')?.value || 1000000);
+
+    } catch (err) {
+        notify(err.message, 'error');
+    }
+}
+
+async function renderVaultTrendChart(currentMonth, currentIncome, currentExpense) {
+    const canvas = $('vaultTrendChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (vaultTrendChart) vaultTrendChart.destroy();
+
+    // Generate last 6 months labels
+    const months = [];
+    const d = new Date(`${currentMonth}-01`);
+    for (let i = 5; i >= 0; i--) {
+        const past = new Date(d.getFullYear(), d.getMonth() - i, 1);
+        months.push(past.toISOString().slice(0, 7));
+    }
+
+    let trendIncomes = [];
+    let trendExpenses = [];
+    try {
+        const results = await Promise.all(months.map(m => fetchAPI(`/api/summary?month=${m}`).catch(() => ({}))));
+        trendIncomes = results.map(r => r.total_income || 0);
+        trendExpenses = results.map(r => r.total_expense || 0);
+    } catch {
+        trendIncomes = [0, 0, 0, 0, 0, currentIncome];
+        trendExpenses = [0, 0, 0, 0, 0, currentExpense];
+    }
+
+    const labels = months.map(m => {
+        const parts = m.split('-');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        return `${monthNames[parseInt(parts[1], 10) - 1]} ${parts[0].slice(2)}`;
+    });
+
+    vaultTrendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Pemasukan',
+                    data: trendIncomes,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                },
+                {
+                    label: 'Pengeluaran',
+                    data: trendExpenses,
+                    borderColor: '#f43f5e',
+                    backgroundColor: 'rgba(244, 63, 94, 0.08)',
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 2,
+                    pointRadius: 4,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, usePointStyle: true } },
+                tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${formatIDR(c.parsed.y)}` } }
+            },
+            scales: {
+                x: { ticks: { color: '#64748b', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.03)' } },
+                y: {
+                    ticks: {
+                        color: '#64748b',
+                        font: { size: 10 },
+                        callback: v => 'Rp ' + (v >= 1000000 ? (v / 1000000).toFixed(1) + ' jt' : (v / 1000).toFixed(0) + 'k')
+                    },
+                    grid: { color: 'rgba(255,255,255,0.04)' }
+                }
+            }
+        }
+    });
+}
+
+function renderVaultCategoryChart(byCategoryData) {
+    const canvas = $('vaultCategoryRadarChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (vaultCategoryRadarChart) vaultCategoryRadarChart.destroy();
+
+    const expenseCats = byCategoryData.filter(c => c.type === 'expense');
+    if (!expenseCats.length) {
+        vaultCategoryRadarChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: { labels: ['Belum ada pengeluaran'], datasets: [{ data: [1], backgroundColor: ['rgba(255,255,255,0.05)'] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+        return;
+    }
+
+    vaultCategoryRadarChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: expenseCats.map(c => `${c.icon} ${c.name}`),
+            datasets: [{
+                data: expenseCats.map(c => c.total),
+                backgroundColor: expenseCats.map(c => c.color || '#6366f1'),
+                borderWidth: 0,
+                hoverOffset: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, padding: 8, usePointStyle: true }
+                },
+                tooltip: { callbacks: { label: ctx => ` ${formatIDR(ctx.parsed)}` } }
+            }
+        }
+    });
+}
+
+function updateVaultWhatIf(extraVal) {
+    const extra = Number(extraVal) || 1000000;
+    if ($('vaultWhatIfExtraLabel')) $('vaultWhatIfExtraLabel').textContent = `+ ${formatIDR(extra)} / bln`;
+
+    const yr1 = extra * 12;
+    const yr3 = Math.round(extra * 36 * 1.08); // 8% compound growth estimate
+    const yr5 = Math.round(extra * 60 * 1.22); // 22% compound growth estimate
+
+    if ($('vaultWhatIf1Yr')) $('vaultWhatIf1Yr').textContent = formatIDR(yr1);
+    if ($('vaultWhatIf3Yr')) $('vaultWhatIf3Yr').textContent = formatIDR(yr3);
+    if ($('vaultWhatIf5Yr')) $('vaultWhatIf5Yr').textContent = formatIDR(yr5);
 }
 
 /* ── Transactions ──────────────────────────────────────────────────────── */
