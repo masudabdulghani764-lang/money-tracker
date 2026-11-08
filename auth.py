@@ -69,6 +69,18 @@ def record_login_attempt(identifier: str, ip: str, success: bool):
             "INSERT INTO login_attempts (identifier, ip_address, attempt_time, success) VALUES (?, ?, ?, ?)",
             (identifier, ip, time.time(), 1 if success else 0),
         )
+        # Periodic cleanup of records older than 24 hours (1 in 10 chance or simple delete)
+        db.execute("DELETE FROM login_attempts WHERE attempt_time < ?", (time.time() - 86400,))
+
+
+def is_registration_rate_limited(ip: str) -> bool:
+    """Prevent registration spam: max 5 registrations per hour per IP."""
+    with get_db() as db:
+        row = db.execute(
+            "SELECT COUNT(*) AS c FROM audit_logs WHERE ip_address = ? AND action LIKE 'Registrasi%' AND created_at > datetime('now', '-1 hour')",
+            (ip,),
+        ).fetchone()
+        return (row["c"] or 0) >= 5
 
 
 @auth_bp.route("/status", methods=["GET"])
@@ -83,13 +95,11 @@ def system_status():
 
     return jsonify({
         "can_register": can_register,
-        "user_count": user_count,
         "single_user_mode": config.PRIVATE_SINGLE_USER_MODE,
         "security_features": {
             "two_factor_auth": True,
             "rate_limiting": True,
             "csrf_protection": True,
-            "bcrypt_rounds": config.BCRYPT_LOG_ROUNDS,
             "single_owner_exclusive": config.PRIVATE_SINGLE_USER_MODE,
         },
     })
@@ -98,6 +108,11 @@ def system_status():
 @auth_bp.route("/register", methods=["POST"])
 def register():
     ip = get_client_ip()
+    if is_registration_rate_limited(ip):
+        return jsonify({
+            "errors": ["Terlalu banyak permintaan registrasi dari perangkat ini. Silakan coba lagi nanti."]
+        }), 429
+
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
     email = (data.get("email") or "").strip().lower()

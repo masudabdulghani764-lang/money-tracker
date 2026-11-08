@@ -1,6 +1,7 @@
 """Transaction, Category, Budget, Analytics & Recurring routes."""
 import csv
 import io
+import re
 from datetime import datetime, timedelta
 
 from flask import Blueprint, Response, jsonify, request
@@ -9,6 +10,18 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 from database import get_db
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
+
+HEX_COLOR_REGEX = re.compile(r"^#[0-9a-fA-F]{3,8}$")
+
+
+def sanitize_csv_cell(val):
+    """Prevent CSV formula injection (DDE attacks)."""
+    if val is None:
+        return ""
+    s = str(val)
+    if s and s[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + s
+    return s
 
 
 # ── Categories ───────────────────────────────────────────────────────────
@@ -27,11 +40,21 @@ def create_category():
     uid = get_jwt_identity()
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()
-    icon = data.get("icon", "💰")
-    color = data.get("color", "#6366f1")
+    icon = (data.get("icon") or "💰").strip()
+    color = (data.get("color") or "#6366f1").strip()
 
     if not name:
         return jsonify({"errors": ["Nama kategori diperlukan."]}), 400
+    if len(name) > 50:
+        return jsonify({"errors": ["Nama kategori maksimal 50 karakter."]}), 400
+
+    # Sanitize color
+    if not HEX_COLOR_REGEX.match(color):
+        color = "#6366f1"
+
+    # Sanitize icon to prevent HTML injection
+    if len(icon) > 10 or "<" in icon or ">" in icon:
+        icon = "💰"
 
     try:
         with get_db() as db:
@@ -125,15 +148,31 @@ def create_transaction():
             raise ValueError
     except (TypeError, ValueError):
         errors.append("Jumlah harus angka positif.")
+
     if not date:
         errors.append("Tanggal diperlukan.")
+    else:
+        try:
+            datetime.strptime(str(date)[:10], "%Y-%m-%d")
+        except (ValueError, TypeError):
+            errors.append("Format tanggal tidak valid (harus YYYY-MM-DD).")
+
     if errors:
         return jsonify({"errors": errors}), 400
 
     with get_db() as db:
+        # Validate category ownership to prevent IDOR
+        if category_id:
+            cat_check = db.execute(
+                "SELECT id FROM categories WHERE id = ? AND user_id = ?",
+                (category_id, uid),
+            ).fetchone()
+            if not cat_check:
+                category_id = None
+
         cursor = db.execute(
             "INSERT INTO transactions (user_id, category_id, type, amount, description, date) VALUES (?,?,?,?,?,?)",
-            (uid, category_id, tx_type, amount, description, date),
+            (uid, category_id, tx_type, amount, description[:250], date[:10]),
         )
         tx_id = cursor.lastrowid
 
@@ -146,21 +185,51 @@ def update_transaction(tx_id):
     uid = get_jwt_identity()
     data = request.get_json(silent=True) or {}
 
+    errors = []
+    if "type" in data and data["type"] not in ("income", "expense"):
+        errors.append("Tipe harus 'income' atau 'expense'.")
+    if "amount" in data:
+        try:
+            amt = float(data["amount"])
+            if amt <= 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            errors.append("Jumlah harus angka positif.")
+    if "date" in data:
+        try:
+            datetime.strptime(str(data["date"])[:10], "%Y-%m-%d")
+        except (ValueError, TypeError):
+            errors.append("Format tanggal tidak valid (harus YYYY-MM-DD).")
+
+    if errors:
+        return jsonify({"errors": errors}), 400
+
     fields = []
     params = []
-    for col in ("type", "amount", "description", "date", "category_id"):
-        if col in data:
-            fields.append(f"{col} = ?")
-            val = data[col]
-            if col == "category_id" and not val:
-                val = None
-            params.append(val)
-
-    if not fields:
-        return jsonify({"errors": ["Tidak ada data untuk diupdate."]}), 400
-
-    params.extend([tx_id, uid])
     with get_db() as db:
+        for col in ("type", "amount", "description", "date", "category_id"):
+            if col in data:
+                fields.append(f"{col} = ?")
+                val = data[col]
+                if col == "category_id":
+                    if val:
+                        cat_check = db.execute(
+                            "SELECT id FROM categories WHERE id = ? AND user_id = ?",
+                            (val, uid),
+                        ).fetchone()
+                        val = cat_check["id"] if cat_check else None
+                    else:
+                        val = None
+                elif col == "description" and val:
+                    val = str(val)[:250]
+                elif col == "date" and val:
+                    val = str(val)[:10]
+                params.append(val)
+
+        if not fields:
+            return jsonify({"errors": ["Tidak ada data untuk diupdate."]}), 400
+
+        params.extend([tx_id, uid])
         db.execute(
             f"UPDATE transactions SET {', '.join(fields)} WHERE id = ? AND user_id = ?",
             params,
@@ -183,6 +252,8 @@ def delete_transaction(tx_id):
 def export_transactions():
     uid = get_jwt_identity()
     month = request.args.get("month")
+    if month and not re.match(r"^\d{4}-\d{2}$", month):
+        month = None
 
     query = """
         SELECT t.date, t.type, c.name as category_name, t.description, t.amount
@@ -194,7 +265,7 @@ def export_transactions():
     if month:
         query += " AND t.date LIKE ?"
         params.append(f"{month}%")
-    query += " ORDER BY t.date DESC, t.id DESC"
+    query += " ORDER BY t.date DESC, t.id DESC LIMIT 5000"
 
     with get_db() as db:
         rows = db.execute(query, params).fetchall()
@@ -207,13 +278,20 @@ def export_transactions():
 
     for r in rows:
         tipe_label = "Pemasukan" if r["type"] == "income" else "Pengeluaran"
-        writer.writerow([r["date"], tipe_label, r["category_name"] or "-", r["description"] or "-", r["amount"]])
+        writer.writerow([
+            sanitize_csv_cell(r["date"]),
+            sanitize_csv_cell(tipe_label),
+            sanitize_csv_cell(r["category_name"] or "-"),
+            sanitize_csv_cell(r["description"] or "-"),
+            r["amount"],
+        ])
 
-    filename = f"transaksi_{month or 'semua'}.csv"
+    safe_month_str = re.sub(r"[^0-9\-]", "", month) if month else "semua"
+    filename = f"transaksi_{safe_month_str}.csv"
     return Response(
         output.getvalue(),
         mimetype="text/csv; charset=utf-8",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 
@@ -444,6 +522,14 @@ def set_budget():
         return jsonify({"errors": ["Batas budget bulanan harus berupa angka positif."]}), 400
 
     with get_db() as db:
+        # Validate category ownership to prevent IDOR
+        cat_check = db.execute(
+            "SELECT id FROM categories WHERE id = ? AND user_id = ?",
+            (category_id, uid),
+        ).fetchone()
+        if not cat_check:
+            return jsonify({"errors": ["Kategori tidak valid atau tidak ditemukan."]}), 400
+
         db.execute(
             """
             INSERT INTO budgets (user_id, category_id, monthly_limit)
@@ -496,6 +582,9 @@ def create_recurring():
 
     if not name:
         return jsonify({"errors": ["Nama langganan/tagihan diperlukan."]}), 400
+    if len(name) > 60:
+        return jsonify({"errors": ["Nama langganan maksimal 60 karakter."]}), 400
+
     try:
         amount = float(amount)
         if amount <= 0:
@@ -503,7 +592,23 @@ def create_recurring():
     except (TypeError, ValueError):
         return jsonify({"errors": ["Jumlah nominal harus positif."]}), 400
 
+    try:
+        due_day = int(due_day)
+        if due_day < 1 or due_day > 31:
+            due_day = 1
+    except (TypeError, ValueError):
+        due_day = 1
+
     with get_db() as db:
+        # Validate category ownership to prevent IDOR
+        if category_id:
+            cat_check = db.execute(
+                "SELECT id FROM categories WHERE id = ? AND user_id = ?",
+                (category_id, uid),
+            ).fetchone()
+            if not cat_check:
+                category_id = None
+
         cursor = db.execute(
             """
             INSERT INTO recurring_transactions (user_id, category_id, name, type, amount, due_day)

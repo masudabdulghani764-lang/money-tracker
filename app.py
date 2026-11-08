@@ -24,7 +24,13 @@ def create_app():
     app.config["JWT_COOKIE_SAMESITE"] = config.JWT_COOKIE_SAMESITE
 
     # ── Extensions ────────────────────────────────────────────────────
-    CORS(app, supports_credentials=True)
+    allowed_origins = [
+        "https://masudghani.pythonanywhere.com",
+        "http://localhost:5000",
+        "http://127.0.0.1:5000",
+        "http://localhost:3000",
+    ]
+    CORS(app, origins=allowed_origins, supports_credentials=True)
     jwt = JWTManager(app)
 
     # ── Security Headers (Industry Standard) ──────────────────────────
@@ -32,8 +38,10 @@ def create_app():
     def set_security_headers(response):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["X-XSS-Protection"] = "0"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()"
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "

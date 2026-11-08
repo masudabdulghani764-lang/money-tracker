@@ -3181,7 +3181,12 @@ function getCurrentMonthString() {
 function notify(text, type = 'success') {
     const el = document.createElement('div');
     el.className = `toast-pill ${type}`;
-    el.innerHTML = `<i class="ri-${type === 'success' ? 'checkbox-circle-fill' : 'error-warning-fill'}"></i> ${text}`;
+    const icon = document.createElement('i');
+    icon.className = `ri-${type === 'success' ? 'checkbox-circle-fill' : 'error-warning-fill'}`;
+    el.appendChild(icon);
+    const span = document.createElement('span');
+    span.textContent = ' ' + (text || '');
+    el.appendChild(span);
     $('toastDeck').appendChild(el);
     setTimeout(() => {
         el.style.opacity = '0';
@@ -3455,26 +3460,29 @@ async function loadCategories() {
 
 function populateCategoryOptions() {
     const listHtml = '<option value="">Pilih Kategori</option>' +
-        currentCategories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+        currentCategories.map(c => `<option value="${c.id}">${escapeHtml(c.icon)} ${escapeHtml(c.name)}</option>`).join('');
     $('txInputCategory').innerHTML = listHtml;
     $('recCategory').innerHTML = listHtml;
 
     const filterHtml = '<option value="">Semua Kategori</option>' +
-        currentCategories.map(c => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+        currentCategories.map(c => `<option value="${c.id}">${escapeHtml(c.icon)} ${escapeHtml(c.name)}</option>`).join('');
     $('txFilterCat').innerHTML = filterHtml;
 }
 
 function renderCategoriesList() {
-    $('categoryBadgeList').innerHTML = currentCategories.map(c => `
-        <div class="cat-chip" style="background:${c.color}15; border-color:${c.color}40; color:${c.color}; display:flex; align-items:center; gap:8px;">
-            <span>${c.icon}</span>
-            <span style="font-weight:600;">${escapeHtml(c.name)}</span>
-            <button type="button" class="btn-icon" onclick="quickAddTxForCategory(${c.id})" title="Catat Pengeluaran untuk ${escapeHtml(c.name)}" style="color:${c.color}; padding:2px; font-size:15px; margin-left:4px; opacity:0.85;">
-                <i class="ri-add-circle-line"></i>
-            </button>
-            <i class="ri-close-line remove-cat-btn" onclick="deleteCategory(${c.id})" title="Hapus Kategori"></i>
-        </div>
-    `).join('');
+    $('categoryBadgeList').innerHTML = currentCategories.map(c => {
+        const safeColor = sanitizeColor(c.color);
+        return `
+            <div class="cat-chip" style="background:${safeColor}15; border-color:${safeColor}40; color:${safeColor}; display:flex; align-items:center; gap:8px;">
+                <span>${escapeHtml(c.icon || '💰')}</span>
+                <span style="font-weight:600;">${escapeHtml(c.name)}</span>
+                <button type="button" class="btn-icon" onclick="quickAddTxForCategory(${c.id})" title="Catat Pengeluaran untuk ${escapeHtml(c.name)}" style="color:${safeColor}; padding:2px; font-size:15px; margin-left:4px; opacity:0.85;">
+                    <i class="ri-add-circle-line"></i>
+                </button>
+                <i class="ri-close-line remove-cat-btn" onclick="deleteCategory(${c.id})" title="Hapus Kategori"></i>
+            </div>
+        `;
+    }).join('');
 }
 
 function quickAddTxForCategory(catId) {
@@ -3552,7 +3560,7 @@ async function refreshDashboard() {
 
         $('insightDailyAvg').textContent = formatIDR(ins.daily_avg);
         if (ins.top_category) {
-            $('insightTopCategory').innerHTML = `${ins.top_category.icon} ${ins.top_category.name} (${formatIDR(ins.top_category.total)})`;
+            $('insightTopCategory').textContent = `${ins.top_category.icon || '📦'} ${ins.top_category.name || '-'} (${formatIDR(ins.top_category.total)})`;
         } else {
             $('insightTopCategory').textContent = 'Belum ada';
         }
@@ -4010,31 +4018,49 @@ function renderTxCards(txs, targetElement) {
         `;
         return;
     }
-    targetElement.innerHTML = txs.map(t => `
-        <div class="tx-card">
-            <div class="tx-icon-bubble" style="background:${t.category_color || '#6366f1'}20; color:${t.category_color || '#6366f1'}">
-                ${t.category_icon || '💰'}
-            </div>
-            <div class="tx-details">
-                <div class="tx-title">${escapeHtml(t.description || t.category_name || 'Tanpa keterangan')}</div>
-                <div class="tx-submeta">
-                    <span style="color:${t.category_color || 'var(--text-secondary)'}">${t.category_icon || ''} ${t.category_name || 'Umum'}</span>
-                    <span><i class="ri-calendar-line"></i> ${t.date}</span>
+
+    // Cache transactions safely in client memory to avoid inline JSON string injection
+    window._txMap = window._txMap || {};
+    txs.forEach(t => { window._txMap[t.id] = t; });
+
+    targetElement.innerHTML = txs.map(t => {
+        const safeColor = sanitizeColor(t.category_color);
+        const safeIcon = escapeHtml(t.category_icon || '💰');
+        const safeName = escapeHtml(t.category_name || 'Umum');
+        const safeDesc = escapeHtml(t.description || t.category_name || 'Tanpa keterangan');
+        const safeDate = escapeHtml(t.date || '');
+
+        return `
+            <div class="tx-card">
+                <div class="tx-icon-bubble" style="background:${safeColor}20; color:${safeColor}">
+                    ${safeIcon}
+                </div>
+                <div class="tx-details">
+                    <div class="tx-title">${safeDesc}</div>
+                    <div class="tx-submeta">
+                        <span style="color:${safeColor}">${safeIcon} ${safeName}</span>
+                        <span><i class="ri-calendar-line"></i> ${safeDate}</span>
+                    </div>
+                </div>
+                <div class="tx-val tabular ${t.type === 'income' ? 'income' : 'expense'}">
+                    ${t.type === 'income' ? '+' : '−'} ${formatIDR(t.amount)}
+                </div>
+                <div class="tx-hover-actions">
+                    <button class="btn-icon" onclick="startEditTxById(${t.id})" title="Edit">
+                        <i class="ri-edit-2-line"></i>
+                    </button>
+                    <button class="btn-icon" onclick="removeTx(${t.id})" title="Hapus">
+                        <i class="ri-delete-bin-line"></i>
+                    </button>
                 </div>
             </div>
-            <div class="tx-val tabular ${t.type}">
-                ${t.type === 'income' ? '+' : '−'} ${formatIDR(t.amount)}
-            </div>
-            <div class="tx-hover-actions">
-                <button class="btn-icon" onclick='startEditTx(${JSON.stringify(t).replace(/'/g, "&#39;")})' title="Edit">
-                    <i class="ri-edit-2-line"></i>
-                </button>
-                <button class="btn-icon" onclick="removeTx(${t.id})" title="Hapus">
-                    <i class="ri-delete-bin-line"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+function startEditTxById(id) {
+    const t = window._txMap && window._txMap[id];
+    if (t) startEditTx(t);
 }
 
 function debounceTxSearch() {
@@ -4162,6 +4188,10 @@ function renderBudgets(budgets) {
         return;
     }
 
+    // Cache budgets in client memory to avoid inline JS quote escaping issues
+    window._budgetMap = window._budgetMap || {};
+    budgets.forEach(b => { window._budgetMap[b.category_id] = b; });
+
     container.innerHTML = budgets.map(b => {
         const hasBudget = b.monthly_limit > 0;
         let barColor = 'var(--green)';
@@ -4172,7 +4202,7 @@ function renderBudgets(budgets) {
             <div class="budget-card">
                 <div class="budget-head">
                     <div class="budget-cat">
-                        <span style="font-size:22px;">${b.category_icon}</span>
+                        <span style="font-size:22px;">${escapeHtml(b.category_icon || '🏷️')}</span>
                         <span>${escapeHtml(b.category_name)}</span>
                     </div>
                     <div>
@@ -4199,13 +4229,18 @@ function renderBudgets(budgets) {
                     <span style="font-size:12px; color:${b.percentage >= 100 ? 'var(--red)' : 'var(--text-muted)'}">
                         ${hasBudget ? (b.percentage >= 100 ? '⚠️ Melebihi batas!' : `Sisa: ${formatIDR(b.remaining)}`) : 'Klik tombol untuk atur limit'}
                     </span>
-                    <button class="btn btn-secondary btn-sm" onclick="openBudgetModal(${b.category_id}, '${escapeHtml(b.category_name)}', ${b.monthly_limit})">
+                    <button class="btn btn-secondary btn-sm" onclick="openBudgetModalById(${b.category_id})">
                         <i class="ri-edit-line"></i> Atur Limit
                     </button>
                 </div>
             </div>
         `;
     }).join('');
+}
+
+function openBudgetModalById(catId) {
+    const b = window._budgetMap && window._budgetMap[catId];
+    if (b) openBudgetModal(b.category_id, b.category_name, b.monthly_limit);
 }
 
 function openBudgetModal(catId, catName, currentLimit) {
@@ -4256,7 +4291,7 @@ function renderRecurring(list) {
             <div>
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:22px;">${r.category_icon || '📅'}</span>
+                        <span style="font-size:22px;">${escapeHtml(r.category_icon || '📅')}</span>
                         <strong style="font-size:15px;">${escapeHtml(r.name)}</strong>
                     </div>
                     <button class="btn-icon" onclick="deleteRecurring(${r.id})" title="Hapus"><i class="ri-delete-bin-line"></i></button>
@@ -4461,6 +4496,13 @@ function escapeHtml(str) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+function sanitizeColor(col) {
+    if (typeof col === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(col.trim())) {
+        return col.trim();
+    }
+    return '#6366f1';
 }
 
 /* ── Interactive Landing Financial Analytics Simulator ─────────────────── */

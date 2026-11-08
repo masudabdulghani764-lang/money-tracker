@@ -1,6 +1,7 @@
 """Application configuration with industry-standard security defaults."""
 import os
 import secrets
+import stat
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -13,6 +14,10 @@ os.makedirs(os.path.join(BASE_DIR, "data"), exist_ok=True)
 if not os.path.exists(SECRET_FILE):
     with open(SECRET_FILE, "w") as f:
         f.write(secrets.token_hex(32))
+    try:
+        os.chmod(SECRET_FILE, stat.S_IRUSR | stat.S_IWUSR)
+    except Exception:
+        pass
 
 with open(SECRET_FILE, "r") as f:
     _persisted_secret = f.read().strip()
@@ -21,7 +26,12 @@ with open(SECRET_FILE, "r") as f:
 JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", _persisted_secret)
 JWT_ACCESS_TOKEN_EXPIRES_SECONDS = 86400  # 24 hours
 JWT_TOKEN_LOCATION = ["cookies"]
-JWT_COOKIE_SECURE = False  # Works seamlessly across both HTTPS Cloudflare and local Wi-Fi
+# Secure cookies in production by default (can be disabled explicitly with JWT_COOKIE_SECURE=false)
+_cookie_secure_env = os.environ.get("JWT_COOKIE_SECURE", "").strip().lower()
+if _cookie_secure_env in ("false", "0", "no"):
+    JWT_COOKIE_SECURE = False
+else:
+    JWT_COOKIE_SECURE = True
 JWT_COOKIE_CSRF_PROTECT = True
 JWT_COOKIE_SAMESITE = "Lax"
 
