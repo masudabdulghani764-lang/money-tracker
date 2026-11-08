@@ -2332,6 +2332,13 @@
                 </button>
             </div>
 
+            <div class="alert-box" style="display:flex; align-items:center; gap:12px; margin-bottom:16px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.25); color:#c7d2fe; border-radius:12px; padding:12px 16px;">
+                <i class="ri-information-line" style="font-size:22px; color:#818cf8; flex-shrink:0;"></i>
+                <div style="font-size:13px; line-height:1.5;">
+                    <strong>Panduan:</strong> Kategori berfungsi sebagai label/pengelompokan transaksi. Untuk menambah saldo <em>Pengeluaran Bulan Ini</em>, gunakan menu <strong>+ Catat Transaksi</strong> di pojok kanan atas atau klik tombol <strong>+</strong> pada chip kategori di bawah untuk mencatat pengeluaran Anda.
+                </div>
+            </div>
+
             <div class="chart-box">
                 <div class="category-bubble-grid" id="categoryBadgeList"></div>
             </div>
@@ -3459,12 +3466,26 @@ function populateCategoryOptions() {
 
 function renderCategoriesList() {
     $('categoryBadgeList').innerHTML = currentCategories.map(c => `
-        <div class="cat-chip" style="background:${c.color}15; border-color:${c.color}40; color:${c.color}">
+        <div class="cat-chip" style="background:${c.color}15; border-color:${c.color}40; color:${c.color}; display:flex; align-items:center; gap:8px;">
             <span>${c.icon}</span>
-            <span>${c.name}</span>
+            <span style="font-weight:600;">${escapeHtml(c.name)}</span>
+            <button type="button" class="btn-icon" onclick="quickAddTxForCategory(${c.id})" title="Catat Pengeluaran untuk ${escapeHtml(c.name)}" style="color:${c.color}; padding:2px; font-size:15px; margin-left:4px; opacity:0.85;">
+                <i class="ri-add-circle-line"></i>
+            </button>
             <i class="ri-close-line remove-cat-btn" onclick="deleteCategory(${c.id})" title="Hapus Kategori"></i>
         </div>
     `).join('');
+}
+
+function quickAddTxForCategory(catId) {
+    openTxModal();
+    const cat = currentCategories.find(c => c.id === catId);
+    if (cat) {
+        chooseTxType('expense');
+        $('txInputCategory').value = cat.id;
+        $('txInputDesc').placeholder = `Pengeluaran ${cat.name}`;
+        $('txInputAmount').focus();
+    }
 }
 
 function openCatModal() {
@@ -4065,12 +4086,14 @@ function presetTx(desc, amount, type) {
 $('txForm').addEventListener('submit', async e => {
     e.preventDefault();
     const editId = $('txHiddenId').value;
+    const catVal = $('txInputCategory').value;
+    const dateVal = $('txInputDate').value;
     const payload = {
         type: currentTxType,
         amount: parseFloat($('txInputAmount').value),
         description: $('txInputDesc').value,
-        category_id: $('txInputCategory').value || null,
-        date: $('txInputDate').value
+        category_id: catVal ? parseInt(catVal, 10) : null,
+        date: dateVal
     };
 
     try {
@@ -4082,8 +4105,20 @@ $('txForm').addEventListener('submit', async e => {
             notify('Transaksi berhasil disimpan! 🎉');
         }
         closeModal('txModal');
-        refreshDashboard();
-        loadTxList();
+
+        // Pastikan tampilan bulan sinkron dengan tanggal transaksi
+        if (dateVal && dateVal.length >= 7) {
+            const txMonth = dateVal.slice(0, 7);
+            if ($('dashMonthInput')) $('dashMonthInput').value = txMonth;
+            if ($('analyticsMonthInput')) $('analyticsMonthInput').value = txMonth;
+            if ($('txFilterMonth')) $('txFilterMonth').value = txMonth;
+        }
+
+        await refreshDashboard();
+        await loadTxList();
+        if ($('paneAnalytics') && $('paneAnalytics').classList.contains('active')) {
+            await loadVaultAnalytics();
+        }
     } catch (err) {
         notify(err.message, 'error');
     }
@@ -4094,8 +4129,11 @@ async function removeTx(id) {
     try {
         await fetchAPI(`/api/transactions/${id}`, { method: 'DELETE' });
         notify('Transaksi dihapus.');
-        refreshDashboard();
-        loadTxList();
+        await refreshDashboard();
+        await loadTxList();
+        if ($('paneAnalytics') && $('paneAnalytics').classList.contains('active')) {
+            await loadVaultAnalytics();
+        }
     } catch (err) {
         notify(err.message, 'error');
     }

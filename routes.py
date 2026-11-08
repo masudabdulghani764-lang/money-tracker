@@ -247,12 +247,16 @@ def summary():
 
         by_category = db.execute(
             f"""
-            SELECT c.id, c.name, c.icon, c.color, t.type,
+            SELECT COALESCE(c.id, 0) AS id,
+                   COALESCE(c.name, 'Tanpa Kategori') AS name,
+                   COALESCE(c.icon, '📦') AS icon,
+                   COALESCE(c.color, '#64748b') AS color,
+                   t.type,
                    SUM(t.amount) AS total
             FROM transactions t
-            JOIN categories c ON t.category_id = c.id
+            LEFT JOIN categories c ON t.category_id = c.id
             WHERE t.user_id = ? {date_filter}
-            GROUP BY c.id, t.type
+            GROUP BY COALESCE(c.id, 0), t.type
             ORDER BY total DESC
             """,
             params_base,
@@ -329,11 +333,14 @@ def insights():
         # Top expense category
         top_cat = db.execute(
             """
-            SELECT c.name, c.icon, c.color, SUM(t.amount) as total
+            SELECT COALESCE(c.name, 'Tanpa Kategori') AS name,
+                   COALESCE(c.icon, '📦') AS icon,
+                   COALESCE(c.color, '#64748b') AS color,
+                   SUM(t.amount) as total
             FROM transactions t
-            JOIN categories c ON t.category_id = c.id
+            LEFT JOIN categories c ON t.category_id = c.id
             WHERE t.user_id = ? AND t.date LIKE ? AND t.type='expense'
-            GROUP BY c.id
+            GROUP BY COALESCE(c.id, 0)
             ORDER BY total DESC
             LIMIT 1
             """,
