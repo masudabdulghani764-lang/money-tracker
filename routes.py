@@ -729,6 +729,9 @@ def bca_inbound_webhook(token):
             or raw_payload.get("content")
             or raw_payload.get("plain")
             or raw_payload.get("html")
+            or raw_payload.get("message")
+            or raw_payload.get("notification")
+            or raw_payload.get("notif")
             or ""
         )
     if not text_content:
