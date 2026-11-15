@@ -2365,6 +2365,58 @@
                 </div>
             </div>
 
+            <!-- Zero-Password Webhook & Robot Gmail Automation Card (FEATURE UTAMA) -->
+            <div class="chart-box" style="margin-bottom:24px; border:2px solid #a855f7; box-shadow:0 0 25px rgba(168,85,247,0.35); background:linear-gradient(135deg, rgba(28,18,60,0.95), rgba(45,21,80,0.85)); border-radius:18px;">
+                <div class="chart-box-header">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="masud-badge" style="background:rgba(168,85,247,0.3); color:#d8b4fe; border-color:#c084fc; font-weight:700;">
+                                <i class="ri-robot-2-line"></i> Robot Otomatis 24 Jam
+                            </span>
+                            <span class="masud-badge" style="background:rgba(16,185,129,0.25); color:#34d399; border-color:rgba(16,185,129,0.5); font-weight:700;">
+                                <i class="ri-shield-keyhole-line"></i> 100% Bebas Password Google
+                            </span>
+                        </div>
+                        <h3 style="margin-top:10px; font-size:18px; color:#ffffff;"><i class="ri-sparkling-fill" style="color:#c084fc;"></i> Robot Otomatisasi Email BCA Gmail (Google Apps Script)</h3>
+                        <p style="font-size:13px; color:#cbd5e1; margin-top:4px;">
+                            Gunakan Robot resmi Google ini agar tidak perlu Sandi Aplikasi atau Verifikasi 2 Langkah. Robot ini berjalan di dalam akun Google Anda sendiri dan otomatis mengirim mutasi pengeluaran BCA ke Vault setiap kali ada email transaksi baru!
+                        </p>
+                    </div>
+                </div>
+
+                <div style="margin-top:16px;">
+                    <label style="font-size:12px; font-weight:600; color:#e0e7ff; display:block; margin-bottom:6px;">
+                        🔗 URL Webhook Pribadi Akun Vault Anda:
+                    </label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="bcaWebhookUrlInput" readonly class="input-dark" style="flex:1; padding:10px 14px; border-radius:10px; background:rgba(15,23,42,0.8); border:1px solid rgba(168,85,247,0.4); color:#38bdf8; font-family:monospace; font-size:13px; font-weight:600;" value="Memuat URL Webhook...">
+                        <button class="btn btn-secondary btn-sm" onclick="copyWebhookUrl()" style="white-space:nowrap;">
+                            <i class="ri-file-copy-line"></i> Salin URL
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top:20px; background:rgba(0,0,0,0.45); border-radius:12px; padding:16px; border:1px solid rgba(168,85,247,0.3);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <strong style="font-size:13px; color:#ffffff;"><i class="ri-code-s-slash-line" style="color:#c084fc;"></i> Kode Robot Otomatis (Google Apps Script):</strong>
+                        <button class="btn btn-primary btn-sm" onclick="copyGasScript()" style="font-size:12px; padding:6px 14px; background:#9333ea; border-color:#7e22ce;">
+                            <i class="ri-file-copy-line"></i> Salin Semua Kode Robot
+                        </button>
+                    </div>
+                    <textarea id="gasScriptArea" rows="7" readonly style="width:100%; border-radius:8px; padding:10px; background:rgba(15,23,42,0.9); border:1px solid rgba(255,255,255,0.1); color:#c7d2fe; font-family:monospace; font-size:12px; line-height:1.4; resize:none;">// Memuat kode script...</textarea>
+                    
+                    <div style="margin-top:14px; font-size:12px; color:#cbd5e1; line-height:1.8;">
+                        <strong style="color:#ffffff; display:block; margin-bottom:4px;">Cara Mengaktifkan di Google (Hanya 1 Menit):</strong>
+                        1. Buka <strong><a href="https://script.google.com/home/start" target="_blank" style="color:#38bdf8; text-decoration:underline;">script.google.com</a></strong> (layanan resmi Google, gratis).<br>
+                        2. Klik <strong>+ Proyek Baru (New Project)</strong> di pojok kiri atas.<br>
+                        3. Hapus kode bawaan yang ada, lalu <strong>Tempel (Paste) Kode Robot</strong> di atas.<br>
+                        4. Klik ikon disket <strong>💾 Simpan (Save)</strong>.<br>
+                        5. Di menu sebelah kiri, klik ikon jam <strong>⏰ Pemicu (Triggers)</strong> ➔ Klik tombol <strong>+ Tambahkan Pemicu (Add Trigger)</strong> di pojok kanan bawah ➔ Pilih jenis waktu: <em>Berdasarkan Waktu</em> ➔ <em>Penghitung menit (setiap 5 atau 10 menit)</em> ➔ Klik <strong>Simpan</strong>.<br>
+                        <span style="color:#34d399; font-weight:700;">✅ Selesai! Mulai sekarang, setiap ada email BCA (QRIS/Transfer/Debit) masuk ke Gmail Anda, robot Google akan otomatis mengirimkannya ke Money Tracker tanpa perlu password atau Verifikasi 2 Langkah!</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Email Setup Card -->
             <div class="charts-row" style="margin-bottom:24px;">
                 <div class="chart-box" style="flex:1;">
@@ -2428,58 +2480,6 @@
                     <button class="btn btn-primary" onclick="parseBcaInputText()" id="btnParseBca">
                         <i class="ri-radar-line"></i> Pindai & Deteksi Pengeluaran
                     </button>
-                </div>
-            </div>
-
-            <!-- Zero-Password Webhook & Robot Gmail Automation Card -->
-            <div class="chart-box" style="margin-bottom:24px; border:1px solid rgba(168,85,247,0.35); background:linear-gradient(135deg, rgba(22,24,54,0.9), rgba(45,21,80,0.5));">
-                <div class="chart-box-header">
-                    <div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span class="masud-badge" style="background:rgba(168,85,247,0.2); color:#c084fc; border-color:rgba(168,85,247,0.4);">
-                                <i class="ri-robot-2-line"></i> Robot Otomatis 24 Jam
-                            </span>
-                            <span class="masud-badge" style="background:rgba(16,185,129,0.15); color:#34d399; border-color:rgba(16,185,129,0.3);">
-                                <i class="ri-shield-keyhole-line"></i> Tanpa Perlu Password
-                            </span>
-                        </div>
-                        <h3 style="margin-top:8px; font-size:17px; color:var(--text-primary);">Robot Otomatisasi Email BCA Gmail (Google Apps Script)</h3>
-                        <p style="font-size:13px; color:var(--text-secondary); margin-top:2px;">
-                            Karena Google mengunci setelan Sandi Aplikasi untuk akun Anda, gunakan Robot Gmail resmi dari Google. Robot ini berjalan di dalam akun Google Anda sendiri dan otomatis mengirim mutasi BCA ke brankas Money Tracker setiap kali ada email baru!
-                        </p>
-                    </div>
-                </div>
-
-                <div style="margin-top:16px;">
-                    <label style="font-size:12px; font-weight:600; color:#c7d2fe; display:block; margin-bottom:6px;">
-                        🔗 URL Webhook Pribadi Akun Vault Anda:
-                    </label>
-                    <div style="display:flex; gap:8px;">
-                        <input type="text" id="bcaWebhookUrlInput" readonly class="input-dark" style="flex:1; padding:10px 14px; border-radius:10px; background:var(--bg-base); border:1px solid var(--glass-border); color:#38bdf8; font-family:monospace; font-size:13px;" value="Memuat URL Webhook...">
-                        <button class="btn btn-secondary btn-sm" onclick="copyWebhookUrl()">
-                            <i class="ri-file-copy-line"></i> Salin URL
-                        </button>
-                    </div>
-                </div>
-
-                <div style="margin-top:20px; background:rgba(0,0,0,0.35); border-radius:12px; padding:16px; border:1px solid var(--glass-border);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <strong style="font-size:13px; color:var(--text-primary);"><i class="ri-code-s-slash-line" style="color:var(--accent-light);"></i> Kode Robot Otomatis (Google Apps Script):</strong>
-                        <button class="btn btn-primary btn-sm" onclick="copyGasScript()" style="font-size:12px; padding:6px 12px;">
-                            <i class="ri-file-copy-line"></i> Salin Semua Kode Robot
-                        </button>
-                    </div>
-                    <textarea id="gasScriptArea" rows="7" readonly style="width:100%; border-radius:8px; padding:10px; background:var(--bg-base); border:1px solid var(--glass-border); color:#a5b4fc; font-family:monospace; font-size:12px; line-height:1.4; resize:none;">// Memuat kode script...</textarea>
-                    
-                    <div style="margin-top:14px; font-size:12px; color:var(--text-secondary); line-height:1.8;">
-                        <strong style="color:var(--text-primary); display:block; margin-bottom:4px;">Cara Mengaktifkan di Google (Hanya 1 Menit):</strong>
-                        1. Buka <strong><a href="https://script.google.com/home/start" target="_blank" style="color:#818cf8; text-decoration:underline;">script.google.com</a></strong> (layanan resmi Google, gratis).<br>
-                        2. Klik <strong>+ Proyek Baru (New Project)</strong> di pojok kiri atas.<br>
-                        3. Hapus kode bawaan yang ada, lalu <strong>Tempel (Paste) Kode Robot</strong> di atas.<br>
-                        4. Klik ikon <strong>💾 Simpan (Save)</strong>.<br>
-                        5. Di menu sebelah kiri, klik ikon <strong>⏰ Pemicu (Triggers)</strong> ➔ Klik tombol <strong>+ Tambahkan Pemicu (Add Trigger)</strong> di pojok kanan bawah ➔ Pilih jenis waktu: <em>Berdasarkan Waktu</em> ➔ <em>Penghitung menit (setiap 5 atau 10 menit)</em> ➔ Klik <strong>Simpan</strong>.<br>
-                        <span style="color:#34d399; font-weight:600;">✅ Selesai! Mulai sekarang, setiap ada email BCA (QRIS/Transfer/Debit) masuk ke Gmail Anda, robot Google akan otomatis mengirimkannya ke Money Tracker tanpa perlu password atau Verifikasi 2 Langkah!</span>
-                    </div>
                 </div>
             </div>
 
