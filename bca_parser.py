@@ -188,6 +188,28 @@ def guess_category(text: str, categories_list=None, tx_type: str = "expense"):
     return None, "Lainnya"
 
 
+def is_location_text(val: str) -> bool:
+    """Identify if a candidate string is purely a location/city name instead of a store/platform."""
+    if not val:
+        return True
+    s = val.strip().lower()
+    city_keywords = [
+        "jakarta", "dki jakarta", "jakarta pusat", "jakarta selatan", "jakarta barat",
+        "jakarta timur", "jakarta utara", "surabaya", "bandung", "medan", "semarang",
+        "makassar", "palembang", "tangerang", "tangerang selatan", "tangsel", "depok",
+        "bekasi", "bogor", "yogyakarta", "jogja", "solo", "surakarta", "malang",
+        "denpasar", "bali", "batam", "pekanbaru", "bandar lampung", "padang", "pontianak",
+        "banjarmasin", "samarinda", "balikpapan", "manado", "indonesia", "id"
+    ]
+    if s in city_keywords:
+        return True
+    if re.match(r"^(?:kota|kab\.?|kabupaten|kec\.?|kecamatan|prov\.?|provinsi|propinsi)\b", s):
+        return True
+    if re.match(r"^lokasi\b", s):
+        return True
+    return False
+
+
 def parse_single_bca_block(text: str, categories_list=None) -> dict:
     """Extract fields from a single BCA notification email text block."""
     # 1. Amount Extraction
@@ -285,24 +307,59 @@ def parse_single_bca_block(text: str, categories_list=None) -> dict:
 
         description = " - ".join(desc_parts) if desc_parts else "Pemasukan / Transfer Masuk BCA"
     else:
-        m_merch = re.search(r"(?:Merchant|Nama Merchant|Penyedia Layanan)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
-        if m_merch:
-            desc_parts.append(m_merch.group(1).strip())
+        # Outflow / Pengeluaran: Prioritize specific Store / Platform / Merchant
+        store_patterns = [
+            r"(?:Nama\s+Merchant|Merchant\s+Name)\s*[:=]\s*([^\r\n]+)",
+            r"(?:Nama\s+Toko|Nama\s+Outlet|Nama\s+Platform)\s*[:=]\s*([^\r\n]+)",
+            r"(?:Penyedia\s+Jasa|Penyedia\s+Layanan|Nama\s+Perusahaan|Institusi)\s*[:=]\s*([^\r\n]+)",
+            r"(?:Nama\s+Biller|Biller)\s*[:=]\s*([^\r\n]+)",
+            # Standalone Merchant/Toko/Outlet (make sure not preceded by Lokasi/Kota/Alamat)
+            r"(?<!Lokasi\s)(?<!Kota\s)(?<!Alamat\s)\b(?:Merchant|Toko|Outlet|Platform)\s*[:=]\s*([^\r\n]+)",
+        ]
 
-        m_recip = re.search(r"(?:Rekening Tujuan|Nama Penerima|Tujuan|Ke Rekening)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
-        if m_recip:
-            desc_parts.append(m_recip.group(1).strip())
+        store_val = None
+        for pat in store_patterns:
+            m = re.search(pat, text, re.IGNORECASE)
+            if m:
+                candidate = m.group(1).strip()
+                if candidate and not is_location_text(candidate):
+                    store_val = candidate
+                    break
 
+        if store_val:
+            desc_parts.append(store_val)
+
+        # Destination Account / Recipient
+        recip_patterns = [
+            r"(?:Rekening\s+Tujuan|Nama\s+Penerima|Ke\s+Rekening)\s*[:=]\s*([^\r\n]+)",
+        ]
+        for pat in recip_patterns:
+            m = re.search(pat, text, re.IGNORECASE)
+            if m:
+                candidate = m.group(1).strip()
+                if candidate and not is_location_text(candidate):
+                    if not store_val or candidate.lower() not in store_val.lower():
+                        desc_parts.append(candidate)
+                    break
+
+        # Notes / Berita / Keterangan (ensure it is not a location or placeholder)
         m_notes = re.search(r"(?:Berita|Catatan|Keterangan)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
         if m_notes:
             note_str = m_notes.group(1).strip()
-            if note_str and note_str.lower() not in ["tidak ada", "-", "none"]:
-                desc_parts.append(note_str)
+            if note_str and note_str.lower() not in ["tidak ada", "-", "none"] and not is_location_text(note_str):
+                # If no store found yet, clean bank statement prefixes (QRIS, DB, TRSF)
+                if not desc_parts:
+                    cleaned_note = re.sub(r"^(?:qris|db|trsf|pos)\s+[0-9a-z/]+\s+", "", note_str, flags=re.I).strip()
+                    desc_parts.append(cleaned_note if cleaned_note else note_str)
+                else:
+                    desc_parts.append(note_str)
 
         if not desc_parts:
-            m_type_lbl = re.search(r"(?:Jenis Transaksi|Tipe Transaksi)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+            m_type_lbl = re.search(r"(?:Jenis\s+Transaksi|Tipe\s+Transaksi|Jenis\s+Pembayaran)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
             if m_type_lbl:
-                desc_parts.append(m_type_lbl.group(1).strip())
+                type_val = m_type_lbl.group(1).strip()
+                if not is_location_text(type_val):
+                    desc_parts.append(type_val)
 
         description = " - ".join(desc_parts) if desc_parts else "Pengeluaran BCA"
 
