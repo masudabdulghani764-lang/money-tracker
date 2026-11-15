@@ -1928,6 +1928,9 @@
                 <button class="nav-pill" onclick="activateTab('categories')">
                     <i class="ri-folders-line"></i> Kategori
                 </button>
+                <button class="nav-pill" onclick="activateTab('bca')">
+                    <i class="ri-bank-card-line"></i> Email BCA
+                </button>
                 <button class="nav-pill" onclick="activateTab('security')">
                     <i class="ri-lock-password-line"></i> Keamanan
                 </button>
@@ -2341,6 +2344,149 @@
 
             <div class="chart-box">
                 <div class="category-bubble-grid" id="categoryBadgeList"></div>
+            </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════
+             TAB: BCA BANK EMAIL & STATEMENT SYNC
+             ═══════════════════════════════════════════════════════════════ -->
+        <section class="tab-pane" id="paneBca">
+            <div class="dashboard-topbar">
+                <div>
+                    <h2>🏦 Integrasi Email & Notifikasi Pengeluaran BCA</h2>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-top:2px;">
+                        Deteksi otomatis tanggal, nominal, dan kategori pengeluaran dari email notifikasi BCA Anda (QRIS, Transfer, Debit, e-Statement)
+                    </p>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <span class="masud-badge" style="background:rgba(6,182,212,0.15); color:#22d3ee; border-color:rgba(6,182,212,0.3);">
+                        <i class="ri-shield-flash-line"></i> Smart Bank Parser
+                    </span>
+                </div>
+            </div>
+
+            <!-- Email Setup Card -->
+            <div class="charts-row" style="margin-bottom:24px;">
+                <div class="chart-box" style="flex:1;">
+                    <div class="chart-box-header">
+                        <h3><i class="ri-mail-check-line" style="color:#60a5fa"></i> Email BCA Terdaftar</h3>
+                        <span style="font-size:11px; color:var(--text-muted)">Identitas Akun BCA</span>
+                    </div>
+                    <p style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
+                        Tentukan alamat email yang Anda gunakan untuk menerima notifikasi transaksi dari m-BCA / KlikBCA / myBCA.
+                    </p>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="email" id="bcaRegisteredEmailInput" class="input-dark" placeholder="nama@emailbca.com" style="flex:1; padding:10px 14px; border-radius:10px; background:var(--bg-surface-elevated); border:1px solid var(--glass-border); color:var(--text-primary); font-size:14px;">
+                        <button class="btn btn-primary btn-sm" onclick="saveBcaEmailConfig()" style="white-space:nowrap;">
+                            <i class="ri-save-line"></i> Simpan Email
+                        </button>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:12px; font-size:12px; color:var(--text-muted);">
+                        <input type="checkbox" id="syncBcaToProfileCheckbox" style="accent-color:var(--accent); cursor:pointer;">
+                        <label for="syncBcaToProfileCheckbox" style="cursor:pointer;">Sinkronkan juga alamat ini sebagai email profil akun utama</label>
+                    </div>
+                </div>
+
+                <div class="chart-box" style="flex:1;">
+                    <div class="chart-box-header">
+                        <h3><i class="ri-lightbulb-flash-line" style="color:var(--gold)"></i> Format yang Didukung</h3>
+                        <span style="font-size:11px; color:var(--text-muted)">Otomatisasi Regex</span>
+                    </div>
+                    <div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">
+                        <div><strong style="color:var(--text-primary);">• QRIS BCA:</strong> Notifikasi pembayaran kasir, cafe, resto, merchant QR.</div>
+                        <div><strong style="color:var(--text-primary);">• Transfer m-BCA / myBCA:</strong> Notifikasi transfer keluar/masuk & berita transfer.</div>
+                        <div><strong style="color:var(--text-primary);">• Debit BCA & e-Statement:</strong> Pembelian Indomaret/Alfamart, tagihan PLN, dll.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Paste Email Detector -->
+            <div class="chart-box" style="margin-bottom:24px;">
+                <div class="chart-box-header">
+                    <div>
+                        <h3><i class="ri-file-search-line" style="color:var(--cyan)"></i> Tempel & Pindai Email BCA (Smart Paste)</h3>
+                        <span style="font-size:12px; color:var(--text-muted)">Salin dan tempel teks email dari BCA ke kotak di bawah untuk ekstraksi instan</span>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-secondary btn-sm" onclick="fillBcaSample('qris')">
+                            <i class="ri-magic-line"></i> Contoh QRIS
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="fillBcaSample('transfer')">
+                            <i class="ri-magic-line"></i> Contoh Transfer
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <textarea id="bcaEmailRawInput" rows="5" placeholder="Tempelkan isi email notifikasi BCA di sini...&#10;Contoh:&#10;Transaksi Finansial Berhasil&#10;Tanggal : 15/11/2026 13:45&#10;Merchant : Kopi Kenangan&#10;Jumlah : Rp 28.000,00" style="width:100%; border-radius:12px; padding:14px; background:var(--bg-surface-elevated); border:1px solid var(--glass-border); color:var(--text-primary); font-family:monospace; font-size:13px; line-height:1.5; resize:vertical;"></textarea>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
+                    <span style="font-size:12px; color:var(--text-muted);">
+                        <i class="ri-shield-check-line" style="color:var(--green)"></i> Privasi terjamin: diproses lokal dan langsung dicatat ke brankas finansial Anda.
+                    </span>
+                    <button class="btn btn-primary" onclick="parseBcaInputText()" id="btnParseBca">
+                        <i class="ri-radar-line"></i> Pindai & Deteksi Pengeluaran
+                    </button>
+                </div>
+            </div>
+
+            <!-- Parsing Results Deck -->
+            <div id="bcaResultsContainer" style="display:none; margin-bottom:24px;">
+                <div class="chart-box" style="border:1px solid rgba(6,182,212,0.4); box-shadow:0 0 20px rgba(6,182,212,0.12);">
+                    <div class="chart-box-header">
+                        <div>
+                            <h3 style="color:#22d3ee;"><i class="ri-check-double-line"></i> Hasil Deteksi Transaksi BCA</h3>
+                            <span style="font-size:12px; color:var(--text-muted)" id="bcaDetectedCountText">1 transaksi terdeteksi</span>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="commitBcaTransactions()" id="btnCommitBca" style="background:#10b981; border-color:#059669;">
+                            <i class="ri-save-3-line"></i> Simpan Semua ke Pengeluaran Vault
+                        </button>
+                    </div>
+
+                    <div id="bcaParsedCardsList" style="display:flex; flex-direction:column; gap:12px; margin-top:16px;"></div>
+                </div>
+            </div>
+
+            <!-- Direct Inbox IMAP Sync Accordion -->
+            <div class="chart-box">
+                <div class="chart-box-header" style="cursor:pointer;" onclick="toggleImapSettings()">
+                    <div>
+                        <h3><i class="ri-mail-download-line" style="color:#a855f7"></i> Tarik Otomatis dari Kotak Masuk Gmail / IMAP</h3>
+                        <span style="font-size:12px; color:var(--text-muted)">Opsi otomatis: scan langsung email BCA dari inbox email Anda</span>
+                    </div>
+                    <button class="btn-icon" id="toggleImapIcon">
+                        <i class="ri-arrow-down-s-line" style="font-size:22px;"></i>
+                    </button>
+                </div>
+
+                <div id="imapSettingsArea" style="display:none; margin-top:16px; border-top:1px solid var(--glass-border); padding-top:16px;">
+                    <div class="alert-box" style="margin-bottom:16px; font-size:12px; line-height:1.5; color:#c7d2fe; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); border-radius:10px; padding:10px 14px;">
+                        <i class="ri-information-line" style="font-size:18px; color:#818cf8; margin-right:6px;"></i>
+                        Untuk keamanan akun Google/Gmail, gunakan <strong>App Password</strong> (Kata Sandi Aplikasi 16-karakter dari <em>Google Account &gt; Security &gt; 2-Step Verification &gt; App Passwords</em>), bukan kata sandi utama akun Gmail Anda.
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+                        <div>
+                            <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:6px;">Server IMAP</label>
+                            <input type="text" id="bcaImapHost" value="imap.gmail.com" class="input-dark" style="width:100%; padding:10px 12px; border-radius:10px; background:var(--bg-surface-elevated); border:1px solid var(--glass-border); color:var(--text-primary); font-size:13px;">
+                        </div>
+                        <div>
+                            <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:6px;">Alamat Email</label>
+                            <input type="email" id="bcaImapUser" placeholder="email@gmail.com" class="input-dark" style="width:100%; padding:10px 12px; border-radius:10px; background:var(--bg-surface-elevated); border:1px solid var(--glass-border); color:var(--text-primary); font-size:13px;">
+                        </div>
+                        <div>
+                            <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:6px;">Google App Password</label>
+                            <input type="password" id="bcaImapPassword" placeholder="16 digit kata sandi aplikasi" class="input-dark" style="width:100%; padding:10px 12px; border-radius:10px; background:var(--bg-surface-elevated); border:1px solid var(--glass-border); color:var(--text-primary); font-size:13px;">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px; text-align:right;">
+                        <button class="btn btn-secondary" onclick="syncBcaFromImap()" id="btnSyncImap">
+                            <i class="ri-inbox-archive-line"></i> Tarik Notifikasi BCA Terbaru
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -3262,7 +3408,7 @@ function activateTab(tabId) {
     document.querySelectorAll('.nav-pill').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
 
-    const tabButtons = { dashboard: 0, analytics: 1, transactions: 2, budgets: 3, recurring: 4, categories: 5, security: 6 };
+    const tabButtons = { dashboard: 0, analytics: 1, transactions: 2, budgets: 3, recurring: 4, categories: 5, bca: 6, security: 7 };
     const pill = document.querySelectorAll('.nav-pill')[tabButtons[tabId]];
     if (pill) pill.classList.add('active');
 
@@ -3276,6 +3422,7 @@ function activateTab(tabId) {
     if (tabId === 'budgets') loadBudgets();
     if (tabId === 'recurring') loadRecurring();
     if (tabId === 'categories') renderCategoriesList();
+    if (tabId === 'bca') loadBcaSync();
     if (tabId === 'security') loadSecurityAudit();
 }
 
@@ -4355,6 +4502,242 @@ async function deleteRecurring(recId) {
         loadRecurring();
     } catch (err) {
         notify(err.message, 'error');
+    }
+}
+
+/* ── BCA Bank Email Sync & Smart Parser ────────────────────────────────── */
+let currentBcaParsedItems = [];
+
+async function loadBcaSync() {
+    try {
+        const cfg = await fetchAPI('/api/bca/config');
+        if ($('bcaRegisteredEmailInput')) {
+            $('bcaRegisteredEmailInput').value = cfg.bca_email || (currentUser ? currentUser.email : '');
+        }
+        if ($('bcaImapUser')) {
+            $('bcaImapUser').value = cfg.imap_user || cfg.bca_email || (currentUser ? currentUser.email : '');
+        }
+        if ($('bcaImapHost')) {
+            $('bcaImapHost').value = cfg.imap_host || 'imap.gmail.com';
+        }
+    } catch (err) {
+        console.error('BCA config load error:', err);
+    }
+}
+
+async function saveBcaEmailConfig() {
+    const bcaEmail = $('bcaRegisteredEmailInput').value.trim();
+    const syncToProfile = $('syncBcaToProfileCheckbox').checked;
+
+    if (!bcaEmail) {
+        notify('Alamat email BCA tidak boleh kosong.', 'error');
+        return;
+    }
+
+    try {
+        const res = await fetchAPI('/api/bca/config', {
+            method: 'POST',
+            body: JSON.stringify({
+                bca_email: bcaEmail,
+                sync_to_profile: syncToProfile
+            })
+        });
+        notify(res.message);
+        if (syncToProfile && currentUser) {
+            currentUser.email = bcaEmail;
+        }
+    } catch (err) {
+        notify(err.message, 'error');
+    }
+}
+
+function fillBcaSample(sampleType) {
+    const rawInput = $('bcaEmailRawInput');
+    const today = getTodayString();
+    const [y, m, d] = today.split('-');
+    const indDate = `${d}/${m}/${y}`;
+
+    if (sampleType === 'qris') {
+        rawInput.value = `Pembayaran QRIS Berhasil\nTanggal : ${indDate} 12:45:10\nMerchant : Kopi Kenangan Mall\nNominal : Rp 32.000,00\nTotal Bayar : Rp 32.000\nStatus : BERHASIL`;
+    } else {
+        rawInput.value = `Transaksi Finansial Berhasil\nTanggal : ${indDate} 10:15:20\nJenis Transaksi : Transfer ke Rekening BCA\nRekening Tujuan : 8820192812 - WARUNG MAKAN BU SITI\nJumlah : IDR 45.000,00\nBerita : Makan Siang Soto Ayam\nStatus : BERHASIL`;
+    }
+    notify('Contoh teks notifikasi BCA dimasukkan! Klik "Pindai & Deteksi Pengeluaran".');
+}
+
+async function parseBcaInputText() {
+    const text = $('bcaEmailRawInput').value.trim();
+    if (!text) {
+        notify('Tempelkan teks email atau notifikasi BCA terlebih dahulu.', 'error');
+        return;
+    }
+
+    const btn = $('btnParseBca');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Memindai...';
+
+    try {
+        const data = await fetchAPI('/api/bca/parse', {
+            method: 'POST',
+            body: JSON.stringify({ text })
+        });
+
+        currentBcaParsedItems = data.transactions || [];
+        renderBcaParsedCards(currentBcaParsedItems);
+        notify(`${currentBcaParsedItems.length} transaksi BCA terdeteksi!`);
+    } catch (err) {
+        notify(err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+}
+
+function renderBcaParsedCards(items) {
+    const container = $('bcaResultsContainer');
+    const listEl = $('bcaParsedCardsList');
+
+    if (!items || !items.length) {
+        container.style.display = 'none';
+        notify('Tidak ada transaksi valid yang ditemukan dalam teks tersebut. Pastikan teks berisi tanggal dan nominal.', 'error');
+        return;
+    }
+
+    container.style.display = 'block';
+    $('bcaDetectedCountText').textContent = `${items.length} transaksi terdeteksi`;
+
+    listEl.innerHTML = items.map((t, idx) => {
+        const isExp = t.type === 'expense';
+        const typeColor = isExp ? 'var(--red)' : 'var(--green)';
+        const catOptions = currentCategories.map(c => 
+            `<option value="${c.id}" ${c.id === t.category_id ? 'selected' : ''}>${escapeHtml(c.icon)} ${escapeHtml(c.name)}</option>`
+        ).join('');
+
+        return `
+            <div class="tx-card" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background:var(--bg-surface-elevated); padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.08);">
+                <div style="flex:1; min-width:200px;">
+                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                        <span class="masud-badge" style="background:${typeColor}20; color:${typeColor}; border-color:${typeColor}40;">
+                            ${isExp ? 'PENGELUARAN' : 'PEMASUKAN'}
+                        </span>
+                        <input type="date" value="${t.date}" onchange="updateBcaItem(${idx}, 'date', this.value)" style="background:transparent; border:1px solid var(--glass-border); color:var(--text-primary); border-radius:6px; padding:2px 6px; font-size:12px;">
+                    </div>
+                    <input type="text" value="${escapeHtml(t.description)}" onchange="updateBcaItem(${idx}, 'description', this.value)" style="width:100%; background:transparent; border:1px solid var(--glass-border); color:var(--text-primary); border-radius:8px; padding:6px 10px; font-weight:600; font-size:14px;">
+                </div>
+
+                <div style="min-width:140px;">
+                    <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:2px;">Kategori Otomatis</label>
+                    <select onchange="updateBcaItem(${idx}, 'category_id', parseInt(this.value, 10))" style="width:100%; background:var(--bg-base); border:1px solid var(--glass-border); color:var(--text-primary); border-radius:8px; padding:6px 8px; font-size:13px;">
+                        <option value="">Pilih Kategori</option>
+                        ${catOptions}
+                    </select>
+                </div>
+
+                <div style="min-width:130px; text-align:right;">
+                    <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:2px;">Nominal (Rp)</label>
+                    <input type="number" step="any" value="${t.amount}" onchange="updateBcaItem(${idx}, 'amount', parseFloat(this.value))" style="width:120px; text-align:right; font-weight:700; background:transparent; border:1px solid var(--glass-border); color:${typeColor}; border-radius:8px; padding:6px 8px; font-size:14px;">
+                </div>
+
+                <div>
+                    <button type="button" class="btn-icon" onclick="removeBcaItem(${idx})" title="Hapus dari daftar" style="color:var(--text-muted);">
+                        <i class="ri-delete-bin-line"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateBcaItem(idx, field, val) {
+    if (currentBcaParsedItems[idx]) {
+        currentBcaParsedItems[idx][field] = val;
+    }
+}
+
+function removeBcaItem(idx) {
+    currentBcaParsedItems.splice(idx, 1);
+    renderBcaParsedCards(currentBcaParsedItems);
+}
+
+async function commitBcaTransactions() {
+    if (!currentBcaParsedItems.length) {
+        notify('Tidak ada transaksi BCA untuk disimpan.', 'error');
+        return;
+    }
+
+    const btn = $('btnCommitBca');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Menyimpan...';
+
+    try {
+        const res = await fetchAPI('/api/bca/commit', {
+            method: 'POST',
+            body: JSON.stringify({ transactions: currentBcaParsedItems })
+        });
+
+        notify(res.message);
+        $('bcaEmailRawInput').value = '';
+        $('bcaResultsContainer').style.display = 'none';
+        currentBcaParsedItems = [];
+
+        await refreshDashboard();
+        await loadTxList();
+    } catch (err) {
+        notify(err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+}
+
+function toggleImapSettings() {
+    const area = $('imapSettingsArea');
+    const isHidden = area.style.display === 'none' || !area.style.display;
+    area.style.display = isHidden ? 'block' : 'none';
+    $('toggleImapIcon').innerHTML = isHidden 
+        ? '<i class="ri-arrow-up-s-line" style="font-size:22px;"></i>' 
+        : '<i class="ri-arrow-down-s-line" style="font-size:22px;"></i>';
+}
+
+async function syncBcaFromImap() {
+    const imapHost = $('bcaImapHost').value.trim();
+    const imapUser = $('bcaImapUser').value.trim();
+    const appPassword = $('bcaImapPassword').value.trim();
+
+    if (!imapUser || !appPassword) {
+        notify('Masukkan Alamat Email dan App Password 16-digit.', 'error');
+        return;
+    }
+
+    const btn = $('btnSyncImap');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> Menghubungkan ke Inbox...';
+
+    try {
+        const data = await fetchAPI('/api/bca/sync-email', {
+            method: 'POST',
+            body: JSON.stringify({
+                imap_host: imapHost,
+                imap_user: imapUser,
+                app_password: appPassword
+            })
+        });
+
+        currentBcaParsedItems = data.transactions || [];
+        if (currentBcaParsedItems.length) {
+            renderBcaParsedCards(currentBcaParsedItems);
+            notify(`Berhasil menarik ${currentBcaParsedItems.length} transaksi dari email BCA!`);
+        } else {
+            notify('Tidak ada email mutasi BCA baru yang ditemukan di kotak masuk.');
+        }
+    } catch (err) {
+        notify(err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
     }
 }
 

@@ -85,6 +85,17 @@ CREATE TABLE IF NOT EXISTS login_attempts (
     success     INTEGER DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS bca_sync_config (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id      INTEGER NOT NULL UNIQUE,
+    bca_email    TEXT    DEFAULT '',
+    imap_host    TEXT    DEFAULT 'imap.gmail.com',
+    imap_user    TEXT    DEFAULT '',
+    last_sync    TEXT    DEFAULT NULL,
+    created_at   TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 CREATE INDEX IF NOT EXISTS idx_transactions_user   ON transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_date   ON transactions(date);
 CREATE INDEX IF NOT EXISTS idx_categories_user     ON categories(user_id);
@@ -92,6 +103,7 @@ CREATE INDEX IF NOT EXISTS idx_budgets_user        ON budgets(user_id);
 CREATE INDEX IF NOT EXISTS idx_recurring_user      ON recurring_transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_user          ON audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_login_attempts_key  ON login_attempts(identifier, attempt_time);
+CREATE INDEX IF NOT EXISTS idx_bca_config_user     ON bca_sync_config(user_id);
 """
 
 DEFAULT_CATEGORIES = [

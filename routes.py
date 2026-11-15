@@ -653,3 +653,201 @@ def record_recurring_now(rec_id):
         tx_id = cursor.lastrowid
 
     return jsonify({"id": tx_id, "message": f"Transaksi '{rec['name']}' berhasil dicatat ke hari ini!"}), 201
+
+
+# ── BCA Bank Sync & Email Parser ─────────────────────────────────────────
+@api_bp.route("/bca/config", methods=["GET"])
+@jwt_required()
+def get_bca_config():
+    uid = get_jwt_identity()
+    with get_db() as db:
+        user_row = db.execute("SELECT email FROM users WHERE id = ?", (uid,)).fetchone()
+        row = db.execute("SELECT * FROM bca_sync_config WHERE user_id = ?", (uid,)).fetchone()
+
+    user_email = user_row["email"] if user_row else ""
+    if row:
+        cfg = dict(row)
+        if not cfg.get("bca_email"):
+            cfg["bca_email"] = user_email
+        return jsonify(cfg)
+
+    return jsonify({
+        "user_id": uid,
+        "bca_email": user_email,
+        "imap_host": "imap.gmail.com",
+        "imap_user": user_email,
+        "last_sync": None,
+    })
+
+
+@api_bp.route("/bca/config", methods=["POST"])
+@jwt_required()
+def save_bca_config():
+    uid = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    bca_email = (data.get("bca_email") or "").strip().lower()
+    imap_host = (data.get("imap_host") or "imap.gmail.com").strip()
+    imap_user = (data.get("imap_user") or bca_email).strip().lower()
+    sync_to_profile = bool(data.get("sync_to_profile", False))
+
+    if bca_email and ("@" not in bca_email or "." not in bca_email):
+        return jsonify({"errors": ["Format email BCA tidak valid."]}), 400
+
+    with get_db() as db:
+        db.execute(
+            """
+            INSERT INTO bca_sync_config (user_id, bca_email, imap_host, imap_user)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(user_id) DO UPDATE SET
+                bca_email=excluded.bca_email,
+                imap_host=excluded.imap_host,
+                imap_user=excluded.imap_user
+            """,
+            (uid, bca_email, imap_host, imap_user),
+        )
+
+        # Optionally update user's profile email to match their BCA email
+        if sync_to_profile and bca_email:
+            try:
+                db.execute("UPDATE users SET email = ? WHERE id = ?", (bca_email, uid))
+            except Exception:
+                pass  # email might already exist for another user
+
+    return jsonify({
+        "message": "Konfigurasi Email BCA berhasil disimpan!",
+        "bca_email": bca_email,
+    }), 200
+
+
+@api_bp.route("/bca/parse", methods=["POST"])
+@jwt_required()
+def parse_bca_input():
+    """Parse pasted BCA notification email text or statement."""
+    from bca_parser import parse_bca_text
+
+    uid = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    raw_text = data.get("text") or ""
+
+    if not raw_text.strip():
+        return jsonify({"errors": ["Teks email atau mutasi BCA belum dimasukkan."]}), 400
+
+    with get_db() as db:
+        cats = db.execute("SELECT id, name FROM categories WHERE user_id = ?", (uid,)).fetchall()
+        categories_list = [dict(c) for c in cats]
+
+    results = parse_bca_text(raw_text, categories_list)
+    return jsonify({
+        "count": len(results),
+        "transactions": results,
+    }), 200
+
+
+@api_bp.route("/bca/commit", methods=["POST"])
+@jwt_required()
+def commit_bca_transactions():
+    """Commit verified parsed BCA transactions into the user's records."""
+    uid = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    txs = data.get("transactions") or []
+
+    if not txs:
+        return jsonify({"errors": ["Tidak ada transaksi untuk disimpan."]}), 400
+
+    saved_count = 0
+    duplicate_count = 0
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    with get_db() as db:
+        for item in txs:
+            amt = float(item.get("amount") or 0)
+            if amt <= 0:
+                continue
+
+            tx_type = "income" if item.get("type") == "income" else "expense"
+            tx_date = str(item.get("date") or today_str)[:10]
+            desc = str(item.get("description") or "Transaksi BCA").strip()[:200]
+            cat_id = item.get("category_id") or None
+
+            # Validate category belongs to user
+            if cat_id:
+                cat_check = db.execute(
+                    "SELECT id FROM categories WHERE id = ? AND user_id = ?",
+                    (cat_id, uid),
+                ).fetchone()
+                if not cat_check:
+                    cat_id = None
+
+            # Duplicate check (same amount, same date, same user, same type)
+            existing = db.execute(
+                """
+                SELECT id FROM transactions
+                WHERE user_id = ? AND date = ? AND amount = ? AND type = ? AND description = ?
+                """,
+                (uid, tx_date, amt, tx_type, desc),
+            ).fetchone()
+
+            if existing:
+                duplicate_count += 1
+                continue
+
+            db.execute(
+                """
+                INSERT INTO transactions (user_id, category_id, type, amount, description, date)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (uid, cat_id, tx_type, amt, desc, tx_date),
+            )
+            saved_count += 1
+
+        # Record last sync timestamp
+        now_ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db.execute(
+            "UPDATE bca_sync_config SET last_sync = ? WHERE user_id = ?",
+            (now_ts, uid),
+        )
+
+    msg = f"{saved_count} pengeluaran/mutasi BCA berhasil dicatat ke Vault!"
+    if duplicate_count > 0:
+        msg += f" ({duplicate_count} transaksi duplikat dilewati)."
+
+    return jsonify({
+        "message": msg,
+        "saved_count": saved_count,
+        "duplicate_count": duplicate_count,
+    }), 201
+
+
+@api_bp.route("/bca/sync-email", methods=["POST"])
+@jwt_required()
+def sync_bca_email():
+    """Fetch recent BCA emails directly from IMAP server."""
+    from bca_parser import fetch_bca_emails_imap
+
+    uid = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
+    imap_host = (data.get("imap_host") or "imap.gmail.com").strip()
+    imap_user = (data.get("imap_user") or "").strip()
+    app_password = (data.get("app_password") or "").strip().replace(" ", "")
+
+    if not imap_user or not app_password:
+        return jsonify({"errors": ["Email dan App Password (16 digit) diperlukan untuk menarik email."]}), 400
+
+    with get_db() as db:
+        cats = db.execute("SELECT id, name FROM categories WHERE user_id = ?", (uid,)).fetchall()
+        categories_list = [dict(c) for c in cats]
+
+    try:
+        items = fetch_bca_emails_imap(
+            host=imap_host,
+            username=imap_user,
+            app_password=app_password,
+            limit=15,
+            categories_list=categories_list,
+        )
+        return jsonify({
+            "count": len(items),
+            "transactions": items,
+        }), 200
+    except Exception as e:
+        return jsonify({"errors": [str(e)]}), 400
