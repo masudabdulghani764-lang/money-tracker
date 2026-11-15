@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS bca_sync_config (
     bca_email    TEXT    DEFAULT '',
     imap_host    TEXT    DEFAULT 'imap.gmail.com',
     imap_user    TEXT    DEFAULT '',
-    webhook_token TEXT   UNIQUE,
+    webhook_token TEXT   DEFAULT NULL,
     last_sync    TEXT    DEFAULT NULL,
     created_at   TEXT    NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -142,7 +142,8 @@ def init_db():
         existing_bca_cols = {row["name"] for row in cursor_bca.fetchall()}
         if "webhook_token" not in existing_bca_cols:
             try:
-                db.execute("ALTER TABLE bca_sync_config ADD COLUMN webhook_token TEXT UNIQUE")
+                db.execute("ALTER TABLE bca_sync_config ADD COLUMN webhook_token TEXT DEFAULT NULL")
+                db.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_bca_webhook_token ON bca_sync_config(webhook_token)")
             except Exception:
                 pass
 
