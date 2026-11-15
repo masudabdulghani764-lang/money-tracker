@@ -2448,14 +2448,14 @@
         <section class="tab-pane" id="paneBca">
             <div class="dashboard-topbar">
                 <div>
-                    <h2>🏦 Integrasi Email & Notifikasi Pengeluaran BCA</h2>
+                    <h2>🏦 Integrasi Email & Notifikasi BCA (Pemasukan & Pengeluaran Otomatis)</h2>
                     <p style="font-size:13px; color:var(--text-secondary); margin-top:2px;">
-                        Deteksi otomatis tanggal, nominal, dan kategori pengeluaran dari email notifikasi BCA Anda (QRIS, Transfer, Debit, e-Statement)
+                        Deteksi otomatis tanggal, nominal, tipe (pemasukan & pengeluaran), dan kategori dari email notifikasi BCA Anda (QRIS, Transfer Masuk/Keluar, Gaji, Debit, e-Statement)
                     </p>
                 </div>
                 <div style="display:flex; gap:10px; align-items:center;">
                     <span class="masud-badge" style="background:rgba(6,182,212,0.15); color:#22d3ee; border-color:rgba(6,182,212,0.3);">
-                        <i class="ri-shield-flash-line"></i> Smart Bank Parser
+                        <i class="ri-shield-flash-line"></i> Smart Bank Parser 2-Way
                     </span>
                 </div>
             </div>
@@ -2474,7 +2474,7 @@
                         </div>
                         <h3 style="margin-top:10px; font-size:18px; color:#ffffff;"><i class="ri-sparkling-fill" style="color:#c084fc;"></i> Robot Otomatisasi Email BCA Gmail (Google Apps Script)</h3>
                         <p style="font-size:13px; color:#cbd5e1; margin-top:4px;">
-                            Gunakan Robot resmi Google ini agar tidak perlu Sandi Aplikasi atau Verifikasi 2 Langkah. Robot ini berjalan di dalam akun Google Anda sendiri dan otomatis mengirim mutasi pengeluaran BCA ke Vault setiap kali ada email transaksi baru!
+                            Gunakan Robot resmi Google ini agar tidak perlu Sandi Aplikasi atau Verifikasi 2 Langkah. Robot ini berjalan di dalam akun Google Anda sendiri dan otomatis mengirim mutasi transaksi BCA (pengeluaran maupun pemasukan/transfer masuk) ke Vault setiap kali ada email transaksi baru!
                         </p>
                     </div>
                 </div>
@@ -2507,7 +2507,7 @@
                         3. Hapus kode bawaan yang ada, lalu <strong>Tempel (Paste) Kode Robot</strong> di atas.<br>
                         4. Klik ikon disket <strong>💾 Simpan (Save)</strong>.<br>
                         5. Di menu sebelah kiri, klik ikon jam <strong>⏰ Pemicu (Triggers)</strong> ➔ Klik tombol <strong>+ Tambahkan Pemicu (Add Trigger)</strong> di pojok kanan bawah ➔ Pilih jenis waktu: <em>Berdasarkan Waktu</em> ➔ <em>Penghitung menit (setiap 5 atau 10 menit)</em> ➔ Klik <strong>Simpan</strong>.<br>
-                        <span style="color:#34d399; font-weight:700;">✅ Selesai! Mulai sekarang, setiap ada email BCA (QRIS/Transfer/Debit) masuk ke Gmail Anda, robot Google akan otomatis mengirimkannya ke Money Tracker tanpa perlu password atau Verifikasi 2 Langkah!</span>
+                        <span style="color:#34d399; font-weight:700;">✅ Selesai! Mulai sekarang, setiap ada email BCA (QRIS, Transfer Keluar, Transfer Masuk/Gaji, Debit) masuk ke Gmail Anda, robot Google akan otomatis mengirimkannya ke Money Tracker tanpa perlu password atau Verifikasi 2 Langkah!</span>
                     </div>
                 </div>
             </div>
@@ -2537,12 +2537,12 @@
                 <div class="chart-box" style="flex:1;">
                     <div class="chart-box-header">
                         <h3><i class="ri-lightbulb-flash-line" style="color:var(--gold)"></i> Format yang Didukung</h3>
-                        <span style="font-size:11px; color:var(--text-muted)">Otomatisasi Regex</span>
+                        <span style="font-size:11px; color:var(--text-muted)">Otomatisasi Regex 2-Arah</span>
                     </div>
                     <div style="font-size:12px; color:var(--text-secondary); line-height:1.6;">
                         <div><strong style="color:var(--text-primary);">• QRIS BCA:</strong> Notifikasi pembayaran kasir, cafe, resto, merchant QR.</div>
-                        <div><strong style="color:var(--text-primary);">• Transfer m-BCA / myBCA:</strong> Notifikasi transfer keluar/masuk & berita transfer.</div>
-                        <div><strong style="color:var(--text-primary);">• Debit BCA & e-Statement:</strong> Pembelian Indomaret/Alfamart, tagihan PLN, dll.</div>
+                        <div><strong style="color:var(--text-primary);">• Transfer Keluar & Masuk:</strong> Transfer antar rekening BCA, BI-FAST, LLG, RTGS, dan penerimaan gaji.</div>
+                        <div><strong style="color:var(--text-primary);">• Debit, Setoran & e-Statement:</strong> Pembelian kartu debit, setoran tunai CDM, tagihan PLN, dll.</div>
                     </div>
                 </div>
             </div>
@@ -2554,18 +2554,21 @@
                         <h3><i class="ri-file-search-line" style="color:var(--cyan)"></i> Tempel & Pindai Email BCA (Smart Paste)</h3>
                         <span style="font-size:12px; color:var(--text-muted)">Salin dan tempel teks email dari BCA ke kotak di bawah untuk ekstraksi instan</span>
                     </div>
-                    <div style="display:flex; gap:8px;">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <button class="btn btn-secondary btn-sm" onclick="fillBcaSample('qris')">
                             <i class="ri-magic-line"></i> Contoh QRIS
                         </button>
                         <button class="btn btn-secondary btn-sm" onclick="fillBcaSample('transfer')">
-                            <i class="ri-magic-line"></i> Contoh Transfer
+                            <i class="ri-magic-line"></i> Contoh Transfer Keluar
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="fillBcaSample('income')">
+                            <i class="ri-arrow-down-circle-line" style="color:#34d399;"></i> Contoh Dana Masuk
                         </button>
                     </div>
                 </div>
 
                 <div style="margin-top:12px;">
-                    <textarea id="bcaEmailRawInput" rows="5" placeholder="Tempelkan isi email notifikasi BCA di sini...&#10;Contoh:&#10;Transaksi Finansial Berhasil&#10;Tanggal : 15/11/2026 13:45&#10;Merchant : Kopi Kenangan&#10;Jumlah : Rp 28.000,00" style="width:100%; border-radius:12px; padding:14px; background:var(--bg-surface-elevated); border:1px solid var(--glass-border); color:var(--text-primary); font-family:monospace; font-size:13px; line-height:1.5; resize:vertical;"></textarea>
+                    <textarea id="bcaEmailRawInput" rows="5" placeholder="Tempelkan isi email notifikasi BCA di sini...&#10;Contoh:&#10;Transfer Dana Masuk Berhasil&#10;Tanggal : 15/11/2026 14:30&#10;Nama Pengirim : BUDI SANTOSO&#10;Jumlah : Rp 500.000,00&#10;Berita : Freelance" style="width:100%; border-radius:12px; padding:14px; background:var(--bg-surface-elevated); border:1px solid var(--glass-border); color:var(--text-primary); font-family:monospace; font-size:13px; line-height:1.5; resize:vertical;"></textarea>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:14px;">
@@ -2573,7 +2576,7 @@
                         <i class="ri-shield-check-line" style="color:var(--green)"></i> Privasi terjamin: diproses lokal dan langsung dicatat ke brankas finansial Anda.
                     </span>
                     <button class="btn btn-primary" onclick="parseBcaInputText()" id="btnParseBca">
-                        <i class="ri-radar-line"></i> Pindai & Deteksi Pengeluaran
+                        <i class="ri-radar-line"></i> Pindai & Deteksi Transaksi
                     </button>
                 </div>
             </div>
@@ -2587,7 +2590,7 @@
                             <span style="font-size:12px; color:var(--text-muted)" id="bcaDetectedCountText">1 transaksi terdeteksi</span>
                         </div>
                         <button class="btn btn-primary btn-sm" onclick="commitBcaTransactions()" id="btnCommitBca" style="background:#10b981; border-color:#059669;">
-                            <i class="ri-save-3-line"></i> Simpan Semua ke Pengeluaran Vault
+                            <i class="ri-save-3-line"></i> Simpan Semua ke Vault
                         </button>
                     </div>
 
@@ -4813,10 +4816,12 @@ function fillBcaSample(sampleType) {
 
     if (sampleType === 'qris') {
         rawInput.value = `Pembayaran QRIS Berhasil\nTanggal : ${indDate} 12:45:10\nMerchant : Kopi Kenangan Mall\nNominal : Rp 32.000,00\nTotal Bayar : Rp 32.000\nStatus : BERHASIL`;
-    } else {
+    } else if (sampleType === 'transfer') {
         rawInput.value = `Transaksi Finansial Berhasil\nTanggal : ${indDate} 10:15:20\nJenis Transaksi : Transfer ke Rekening BCA\nRekening Tujuan : 8820192812 - WARUNG MAKAN BU SITI\nJumlah : IDR 45.000,00\nBerita : Makan Siang Soto Ayam\nStatus : BERHASIL`;
+    } else if (sampleType === 'income') {
+        rawInput.value = `Transfer Dana Masuk Berhasil\nTanggal : ${indDate} 14:30:00\nJenis Transaksi : Transfer Masuk ke Rekening BCA\nNama Pengirim : BUDI SANTOSO\nDari Bank : BCA\nNominal : Rp 500.000,00\nBerita : Pembayaran Freelance Web\nStatus : BERHASIL`;
     }
-    notify('Contoh teks notifikasi BCA dimasukkan! Klik "Pindai & Deteksi Pengeluaran".');
+    notify('Contoh teks notifikasi BCA dimasukkan! Klik "Pindai & Deteksi Transaksi".');
 }
 
 async function parseBcaInputText() {

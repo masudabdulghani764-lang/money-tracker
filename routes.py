@@ -785,7 +785,7 @@ def bca_inbound_webhook(token):
         "status": "success",
         "imported": saved_count,
         "duplicates": dup_count,
-        "message": f"Webhook berhasil: {saved_count} pengeluaran BCA dicatat otomatis ke Vault!",
+        "message": f"Webhook berhasil: {saved_count} transaksi BCA (pemasukan/pengeluaran) dicatat otomatis ke Vault!",
     }), 200
 
 

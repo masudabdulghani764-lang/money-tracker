@@ -54,10 +54,13 @@ CATEGORY_KEYWORDS = {
         "youtube", "steam", "playstation", "game", "karaoke", "disney", "prime"
     ],
     "Gaji": [
-        "gaji", "payroll", "salary", "upah", "honor", "bonus"
+        "gaji", "payroll", "salary", "upah", "honor", "bonus", "tunjangan",
+        "thr", "komisi", "fee", "insentif", "uang saku", "pt ", "cv "
     ],
     "Investasi": [
-        "bibit", "bareksa", "ajaib", "pluang", "stockbit", "deposito", "reksadana", "saham"
+        "bibit", "bareksa", "ajaib", "pluang", "stockbit", "deposito",
+        "reksadana", "saham", "dividen", "kupon", "yield", "bunga tabungan",
+        "bunga bank", "crypto", "binance", "tokocrypto"
     ],
 }
 
@@ -131,17 +134,26 @@ def parse_date_string(date_str: str) -> str:
     return datetime.now().strftime("%Y-%m-%d")
 
 
-def guess_category(text: str, categories_list=None):
+def guess_category(text: str, categories_list=None, tx_type: str = "expense"):
     """Smartly match transaction text to existing category id and name."""
     text_lower = text.lower()
     matched_cat_name = None
 
-    for cat_name, keywords in CATEGORY_KEYWORDS.items():
+    # Priority category order based on transaction type
+    if tx_type == "income":
+        order = ["Gaji", "Investasi", "Makanan & Minuman", "Tagihan & Utilitas", "Belanja", "Transportasi", "Kesehatan", "Hiburan"]
+    else:
+        order = ["Makanan & Minuman", "Tagihan & Utilitas", "Belanja", "Transportasi", "Kesehatan", "Hiburan", "Gaji", "Investasi"]
+
+    for cat_name in order:
+        keywords = CATEGORY_KEYWORDS.get(cat_name, [])
         if any(kw in text_lower for kw in keywords):
             matched_cat_name = cat_name
             break
 
     if not categories_list:
+        if tx_type == "income":
+            return None, matched_cat_name or "Gaji"
         return None, matched_cat_name or "Lainnya"
 
     # Match against actual user category objects
@@ -156,6 +168,18 @@ def guess_category(text: str, categories_list=None):
         if c_name in text_lower or any(part in c_name for part in text_lower.split() if len(part) >= 3):
             return c["id"], c["name"]
 
+    # If income and no direct match, check for income-specific categories
+    if tx_type == "income":
+        for preferred in ["pemasukan", "pendapatan", "transfer masuk", "dana masuk", "uang masuk"]:
+            match = next((c for c in categories_list if preferred in c["name"].lower()), None)
+            if match:
+                return match["id"], match["name"]
+
+        # Check if text looks like work or salary and user has "Gaji"
+        gaji_cat = next((c for c in categories_list if "gaji" in c["name"].lower()), None)
+        if gaji_cat and any(w in text_lower for w in ["gaji", "payroll", "pt ", "cv ", "honor", "bonus", "salary"]):
+            return gaji_cat["id"], gaji_cat["name"]
+
     # Fallback to "Lainnya" or first category
     fallback = next((c for c in categories_list if "lainnya" in c["name"].lower()), categories_list[0] if categories_list else None)
     if fallback:
@@ -169,9 +193,9 @@ def parse_single_bca_block(text: str, categories_list=None) -> dict:
     # 1. Amount Extraction
     amount = 0.0
     amt_patterns = [
-        r"(?:Jumlah|Nominal|Total|Sebesar|Nilai Transaksi)\s*(?:Transaksi)?\s*[:=]?\s*(?:IDR|Rp\.?|RP)?\s*([0-9.,]+)",
+        r"(?:Jumlah|Nominal|Total|Sebesar|Nilai Transaksi|Total Kredit|Total Mutasi|Dana Sebesar)\s*(?:Transaksi)?\s*[:=]?\s*(?:IDR|Rp\.?|RP)?\s*([0-9.,]+)",
         r"(?:IDR|Rp\.?|RP)\s*([0-9.,]+)",
-        r"([0-9.,]+)\s*(?:DB|CR)",
+        r"([0-9.,]+)\s*(?:DB|CR|KREDIT|DEBIT)",
     ]
     for pat in amt_patterns:
         m = re.search(pat, text, re.IGNORECASE)
@@ -194,49 +218,98 @@ def parse_single_bca_block(text: str, categories_list=None) -> dict:
             tx_date = parse_date_string(m.group(1))
             break
 
-    # 3. Type Extraction (Default expense for payments/QRIS/transfers)
+    # 3. Type Extraction (Income vs Expense)
     tx_type = "expense"
-    if re.search(r"\b(CR|KREDIT|DANA MASUK|TRANSFER DARI|DITERIMA DARI|UANG MASUK)\b", text, re.IGNORECASE):
+
+    inflow_patterns = [
+        r"\b(transfer\s+(?:dana\s+)?masuk|dana\s+masuk|uang\s+masuk|penerimaan\s+(?:dana|transfer))\b",
+        r"\b(setoran\s+tunai|setor\s+tunai|setoran\s+cdm|bi-fast\s+masuk|kliring\s+masuk|incoming\s+transfer)\b",
+        r"\b(telah\s+masuk\s+ke\s+rekening|dikreditkan\s+ke\s+rekening|masuk\s+ke\s+rekening)\b",
+        r"\b(transfer\s+dari|diterima\s+dari|terima\s+dana|terima\s+transfer)\b",
+        r"\b(bunga\s+tabungan|bagi\s+hasil|cashback|refund|pengembalian\s+dana)\b",
+        r"\b(payroll\s+masuk|gaji\s+masuk|transfer\s+gaji)\b",
+    ]
+    is_inflow = any(re.search(pat, text, re.IGNORECASE) for pat in inflow_patterns)
+
+    has_cr_flag = bool(re.search(r"(?:\bCR\b|\(CR\)|mutasi\s+cr|kredit\s*[:=]|total\s+kredit)", text, re.IGNORECASE))
+    if not has_cr_flag and re.search(r"\bkredit\b", text, re.IGNORECASE):
+        if not re.search(r"\b(?:kartu\s+kredit|credit\s+card|cicilan)\b", text, re.IGNORECASE):
+            has_cr_flag = True
+
+    outflow_patterns = [
+        r"\b(transfer\s+ke|rekening\s+tujuan|nama\s+penerima|pembayaran(?:\s+ke)?|pembelian|qris|tarik\s+tunai)\b",
+        r"\b(tagihan|kartu\s+kredit|debit|autodebet|pendebetan)\b",
+        r"(?:\bDB\b|\(DB\)|mutasi\s+db|total\s+debit)",
+    ]
+    is_outflow = any(re.search(pat, text, re.IGNORECASE) for pat in outflow_patterns)
+
+    if (is_inflow or has_cr_flag) and not is_outflow:
         tx_type = "income"
-    elif re.search(r"\b(DB|DEBIT|TRANSFER KE|PEMBAYARAN|QRIS|PEMBELIAN|TARIK TUNAI)\b", text, re.IGNORECASE):
+    elif is_inflow and has_cr_flag:
+        tx_type = "income"
+    elif is_inflow and not re.search(r"\b(transfer\s+ke|qris|pembayaran\s+ke)\b", text, re.IGNORECASE):
+        tx_type = "income"
+    elif is_outflow:
         tx_type = "expense"
+    else:
+        if re.search(r"(?:Pengirim|Dari Rekening|Nama Pengirim)\s*[:=]", text, re.IGNORECASE) and not re.search(r"(?:Penerima|Tujuan|Ke Rekening|Merchant)\s*[:=]", text, re.IGNORECASE):
+            tx_type = "income"
+        else:
+            tx_type = "expense"
 
     # 4. Description Extraction
     desc_parts = []
+    if tx_type == "income":
+        sender_name = None
+        m_name = re.search(r"(?:Nama Pengirim|Pengirim Dana|Nama Penyetor)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+        if m_name:
+            sender_name = m_name.group(1).strip()
+        else:
+            m_gen = re.search(r"(?:Pengirim|Dari Bank|Dari Rekening|Dari)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+            if m_gen:
+                sender_name = m_gen.group(1).strip()
 
-    # Check merchant
-    m_merch = re.search(r"(?:Merchant|Nama Merchant|Penyedia Layanan)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
-    if m_merch:
-        desc_parts.append(m_merch.group(1).strip())
+        if sender_name:
+            desc_parts.append(f"Dari {sender_name}")
 
-    # Check destination account / recipient
-    m_recip = re.search(r"(?:Rekening Tujuan|Nama Penerima|Tujuan|Ke Rekening)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
-    if m_recip:
-        desc_parts.append(m_recip.group(1).strip())
+        m_notes = re.search(r"(?:Berita|Catatan|Keterangan)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+        if m_notes:
+            note_str = m_notes.group(1).strip()
+            if note_str and note_str.lower() not in ["tidak ada", "-", "none"]:
+                desc_parts.append(note_str)
 
-    # Check notes / berita
-    m_notes = re.search(r"(?:Berita|Catatan|Keterangan)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
-    if m_notes:
-        note_str = m_notes.group(1).strip()
-        if note_str and note_str.lower() != "tidak ada":
-            desc_parts.append(note_str)
+        if not desc_parts:
+            m_type_lbl = re.search(r"(?:Jenis Transaksi|Tipe Transaksi)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+            if m_type_lbl:
+                desc_parts.append(m_type_lbl.group(1).strip())
 
-    # Check transaction type label if no merchant/recipient
-    if not desc_parts:
-        m_type_lbl = re.search(r"(?:Jenis Transaksi|Tipe Transaksi)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
-        if m_type_lbl:
-            desc_parts.append(m_type_lbl.group(1).strip())
+        description = " - ".join(desc_parts) if desc_parts else "Pemasukan / Transfer Masuk BCA"
+    else:
+        m_merch = re.search(r"(?:Merchant|Nama Merchant|Penyedia Layanan)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+        if m_merch:
+            desc_parts.append(m_merch.group(1).strip())
 
-    description = " - ".join(desc_parts) if desc_parts else ""
-    if not description:
-        # Fallback snippet
-        first_line = text.strip().split("\n")[0][:45]
-        description = f"Transaksi BCA ({first_line})" if first_line else "Pengeluaran BCA"
+        m_recip = re.search(r"(?:Rekening Tujuan|Nama Penerima|Tujuan|Ke Rekening)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+        if m_recip:
+            desc_parts.append(m_recip.group(1).strip())
+
+        m_notes = re.search(r"(?:Berita|Catatan|Keterangan)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+        if m_notes:
+            note_str = m_notes.group(1).strip()
+            if note_str and note_str.lower() not in ["tidak ada", "-", "none"]:
+                desc_parts.append(note_str)
+
+        if not desc_parts:
+            m_type_lbl = re.search(r"(?:Jenis Transaksi|Tipe Transaksi)\s*[:=]\s*([^\n\r]+)", text, re.IGNORECASE)
+            if m_type_lbl:
+                desc_parts.append(m_type_lbl.group(1).strip())
+
+        description = " - ".join(desc_parts) if desc_parts else "Pengeluaran BCA"
 
     description = re.sub(r"\s+", " ", description).strip()[:100]
 
     # 5. Smart Category Matching
-    category_id, category_name = guess_category(f"{description} {text[:200]}", categories_list)
+    category_id, category_name = guess_category(f"{description} {text[:250]}", categories_list, tx_type=tx_type)
 
     return {
         "amount": amount,
