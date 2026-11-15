@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS bca_sync_config (
     bca_email    TEXT    DEFAULT '',
     imap_host    TEXT    DEFAULT 'imap.gmail.com',
     imap_user    TEXT    DEFAULT '',
+    webhook_token TEXT   UNIQUE,
     last_sync    TEXT    DEFAULT NULL,
     created_at   TEXT    NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -135,6 +136,15 @@ def init_db():
             db.execute("ALTER TABLE users ADD COLUMN totp_secret TEXT DEFAULT NULL")
         if "totp_enabled" not in existing_cols:
             db.execute("ALTER TABLE users ADD COLUMN totp_enabled INTEGER DEFAULT 0")
+
+        # Migration columns for bca_sync_config
+        cursor_bca = db.execute("PRAGMA table_info(bca_sync_config)")
+        existing_bca_cols = {row["name"] for row in cursor_bca.fetchall()}
+        if "webhook_token" not in existing_bca_cols:
+            try:
+                db.execute("ALTER TABLE bca_sync_config ADD COLUMN webhook_token TEXT UNIQUE")
+            except Exception:
+                pass
 
 
 @contextmanager

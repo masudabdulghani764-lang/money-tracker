@@ -659,25 +659,134 @@ def record_recurring_now(rec_id):
 @api_bp.route("/bca/config", methods=["GET"])
 @jwt_required()
 def get_bca_config():
+    import secrets
+
     uid = get_jwt_identity()
     with get_db() as db:
         user_row = db.execute("SELECT email FROM users WHERE id = ?", (uid,)).fetchone()
         row = db.execute("SELECT * FROM bca_sync_config WHERE user_id = ?", (uid,)).fetchone()
 
-    user_email = user_row["email"] if user_row else ""
-    if row:
-        cfg = dict(row)
-        if not cfg.get("bca_email"):
-            cfg["bca_email"] = user_email
-        return jsonify(cfg)
+        user_email = user_row["email"] if user_row else ""
+        if row:
+            cfg = dict(row)
+            if not cfg.get("bca_email"):
+                cfg["bca_email"] = user_email
+            if not cfg.get("webhook_token"):
+                token = secrets.token_hex(20)
+                db.execute("UPDATE bca_sync_config SET webhook_token = ? WHERE user_id = ?", (token, uid))
+                cfg["webhook_token"] = token
+            cfg["webhook_url"] = f"https://masudghani.pythonanywhere.com/api/bca/webhook/{cfg['webhook_token']}"
+            return jsonify(cfg)
+
+        # Create initial config with token
+        token = secrets.token_hex(20)
+        db.execute(
+            """
+            INSERT INTO bca_sync_config (user_id, bca_email, imap_host, imap_user, webhook_token)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (uid, user_email, "imap.gmail.com", user_email, token),
+        )
 
     return jsonify({
         "user_id": uid,
         "bca_email": user_email,
         "imap_host": "imap.gmail.com",
         "imap_user": user_email,
+        "webhook_token": token,
+        "webhook_url": f"https://masudghani.pythonanywhere.com/api/bca/webhook/{token}",
         "last_sync": None,
     })
+
+
+@api_bp.route("/bca/webhook/<token>", methods=["POST"])
+def bca_inbound_webhook(token):
+    """Zero-password automated email webhook for BCA notifications.
+    Can be invoked by Google Apps Script, Gmail Forwarder, Zapier, or Mailgun.
+    """
+    from bca_parser import parse_bca_text
+
+    with get_db() as db:
+        row = db.execute(
+            "SELECT user_id FROM bca_sync_config WHERE webhook_token = ?",
+            (token,),
+        ).fetchone()
+
+        if not row:
+            return jsonify({"errors": ["Token webhook tidak valid."]}), 403
+
+        uid = row["user_id"]
+        cats = db.execute("SELECT id, name FROM categories WHERE user_id = ?", (uid,)).fetchall()
+        categories_list = [dict(c) for c in cats]
+
+    # Extract text from various inbound formats (JSON, Form-Data, or Plain Text)
+    raw_payload = request.get_json(silent=True) or {}
+    text_content = ""
+    if isinstance(raw_payload, dict):
+        text_content = (
+            raw_payload.get("text")
+            or raw_payload.get("body")
+            or raw_payload.get("content")
+            or raw_payload.get("plain")
+            or raw_payload.get("html")
+            or ""
+        )
+    if not text_content:
+        text_content = request.form.get("text") or request.form.get("body") or request.get_data(as_text=True) or ""
+
+    if not text_content.strip():
+        return jsonify({"errors": ["Tidak ada konten email yang diterima."]}), 400
+
+    parsed_items = parse_bca_text(text_content, categories_list)
+    saved_count = 0
+    dup_count = 0
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    with get_db() as db:
+        for item in parsed_items:
+            amt = float(item.get("amount") or 0)
+            if amt <= 0:
+                continue
+
+            tx_type = "income" if item.get("type") == "income" else "expense"
+            tx_date = str(item.get("date") or today_str)[:10]
+            desc = str(item.get("description") or "Transaksi BCA Otomatis").strip()[:200]
+            cat_id = item.get("category_id") or None
+
+            # Deduplication check
+            existing = db.execute(
+                """
+                SELECT id FROM transactions
+                WHERE user_id = ? AND date = ? AND amount = ? AND type = ? AND description = ?
+                """,
+                (uid, tx_date, amt, tx_type, desc),
+            ).fetchone()
+
+            if existing:
+                dup_count += 1
+                continue
+
+            db.execute(
+                """
+                INSERT INTO transactions (user_id, category_id, type, amount, description, date)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (uid, cat_id, tx_type, amt, desc, tx_date),
+            )
+            saved_count += 1
+
+        now_ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        db.execute(
+            "UPDATE bca_sync_config SET last_sync = ? WHERE user_id = ?",
+            (now_ts, uid),
+        )
+
+    return jsonify({
+        "status": "success",
+        "imported": saved_count,
+        "duplicates": dup_count,
+        "message": f"Webhook berhasil: {saved_count} pengeluaran BCA dicatat otomatis ke Vault!",
+    }), 200
 
 
 @api_bp.route("/bca/config", methods=["POST"])
